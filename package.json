@@ -2,10 +2,11 @@
   "name": "fastify-sarah",
   "version": "1.0.0",
   "description": "simple decorators and dependencies injection framework for fastify",
+  "main": "./dist/public-api.js",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "build": "tsc"
+    "build": "tsc -p ./src"
   },
   "keywords": [
     "fastify",
@@ -26,6 +27,7 @@
   "dependencies": {
     "fastify": "^2.14.1",
     "fastify-plugin": "^1.6.1",
+    "inversify": "^5.0.1",
     "reflect-metadata": "^0.1.13"
   }
 }
