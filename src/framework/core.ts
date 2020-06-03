@@ -1,7 +1,14 @@
 import fp from "fastify-plugin";
-import { BootConfig, BootstrapOptions } from "./types";
+import {
+  BootConfig,
+  BootstrapOptions,
+  Contructable,
+  RegistryConfig,
+} from "./types";
 import { CONTROLLER_BOOT, CONTROLLER_ROUTE_BOOT } from "./metakeys";
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, RouteOptions, RegisterOptions } from "fastify";
+import { Container, injectable } from "inversify";
+import { FastifyInst, ControllerInst } from "./tokens";
 
 /**
  * bootstrap
@@ -11,31 +18,68 @@ export const bootstrap = fp(async (inst, opts: BootstrapOptions, done) => {
   done();
 });
 
+/**
+ * solve dependencies from config
+ */
+export function solveBootConfig(
+  container: Container,
+  config: BootConfig
+): Partial<RouteOptions> {
+  const deps = config.deps().map((dep) => container.get(dep));
+  return config.registry(...deps);
+}
+
 // compile
 export async function boot(inst: FastifyInstance, opts: BootstrapOptions) {
   // create a root container
+  const rootContainer = new Container({ autoBindInjectable: true });
 
   // add default root providers
+  rootContainer.bind(FastifyInst).toConstantValue(inst);
 
   // provide option providers
   // TODO: resolve async provider
 
   opts.controllers.forEach((controller) => {
-    // make child instance of this controller
-
-    // add default providers
-
-    // get all controller config
-    console.log(getConfig(controller));
-    // solve controller config
-
-    // get all routes config
-    // solve route config
-
-    // modify some config
-
-    // apply fastify route
+    solveContorller(rootContainer, controller);
   });
+}
+
+/**
+ * solve a controller configures
+ */
+export async function solveContorller(
+  container: Container,
+  controller: Contructable
+): Promise<Container> {
+  // make child instance of this controller
+  const ctrlInst = container.resolve(controller);
+  const ctrlContainer = new Container({ autoBindInjectable: true });
+  ctrlContainer.parent = container;
+
+  // add default providers
+  ctrlContainer.bind(ControllerInst).toConstantValue(ctrlInst);
+
+  // get all and solve controller config
+  const ctrlConfigs = getConfig(controller).map((config) =>
+    solveBootConfig(ctrlContainer, config)
+  );
+
+  // get all and solve route config
+  const routeConfigs = Object.values(
+    getRouteConfig(controller)
+  ).map((configs) =>
+    ctrlConfigs.concat(
+      configs.map((config) => solveBootConfig(ctrlContainer, config))
+    )
+  );
+
+  // apply fastify route
+  routeConfigs.forEach((config) => {
+    console.log(config);
+  });
+
+  return ctrlContainer;
 }
 
 function getConfig(target): BootConfig[] {
@@ -74,9 +118,15 @@ export function registeRouteConfig(
 /**
  * create class or method decorator for override config
  */
-export function makeDecorator(config: BootConfig) {
+export function makeDecorator(registry: RegistryConfig) {
   return (target, key?: string | symbol, descriptor?: PropertyDescriptor) => {
-    if (key !== undefined) registeRouteConfig(target.constructor, key, config);
-    else registeConfig(target, config);
+    const config = registry({ target, key, descriptor });
+
+    if (key !== undefined) {
+      registeRouteConfig(target.constructor, key, config);
+    } else {
+      registeConfig(target, config);
+      return injectable()(target);
+    }
   };
 }

@@ -11,3 +11,9 @@ export interface BootstrapOptions {
   prefix?: string; // prefix all controller url
   controllers: Contructable[]; // list of controllers
 }
+
+export type RegistryConfig = (info: {
+  target: any;
+  key?: string | symbol;
+  descriptor?: PropertyDescriptor;
+}) => BootConfig;

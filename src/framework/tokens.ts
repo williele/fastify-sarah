@@ -1,2 +1,2 @@
-export const ControllerInstance = Symbol("controller:instance");
-export const FastifyInstance = Symbol("fastify:instance");
+export const ControllerInst = Symbol("controller:instance");
+export const FastifyInst = Symbol("fastify:instance");
