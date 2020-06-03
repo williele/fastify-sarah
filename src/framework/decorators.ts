@@ -5,7 +5,6 @@ import { ControllerInst } from "./tokens";
 // controller decorator
 export function Controller(url: string = "") {
   return makeDecorator(() => ({
-    deps: () => [],
     registry: () => ({ url }),
   }));
 }

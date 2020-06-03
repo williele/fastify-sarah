@@ -1,23 +1,28 @@
 import fastify, { FastifyInstance } from "fastify";
-import {
-  solveContorller,
-  solveBootConfig,
-  makeDecorator,
-} from "../src/framework/core";
+import { solveController, solveBootConfig } from "../src/framework/core";
 import { Route, Controller } from "../src/framework/decorators";
 import { Container } from "inversify";
 import { FastifyInst, ControllerInst } from "../src/framework/tokens";
 
-// dummy decorators use for testing
-function Dummy() {
-  return makeDecorator(() => ({
-    deps: () => [],
-    registry: () => ({
-      preValidation: async (req, res) => {
-        console.log("Dummy");
-      },
-    }),
-  }));
+// test controller
+@Controller("foo")
+class FooController {
+  message = "foo controller";
+
+  @Route("GET")
+  foo() {
+    return "foo";
+  }
+
+  @Route("GET", "bar")
+  bar() {
+    return "bar";
+  }
+
+  @Route("POST", "message")
+  getMessage() {
+    return this.message;
+  }
 }
 
 describe("core", () => {
@@ -25,16 +30,6 @@ describe("core", () => {
   beforeEach(() => {
     server = fastify();
   });
-
-  @Controller("foo")
-  class FooController {
-    @Route("GET")
-    @Dummy()
-    foo() {}
-
-    @Route("GET", "bar")
-    bar() {}
-  }
 
   describe("solve boot configure", () => {
     const container = new Container();
@@ -58,15 +53,33 @@ describe("core", () => {
     expect(config).toBe(registry.mock.results[0].value);
   });
 
-  describe("boot controller", () => {
-    it("should resolve and store controller instance", async () => {
-      const container = new Container();
-      container.bind(FastifyInst).toConstantValue(server);
+  describe("merge configs", () => {
+    // TODO: test merge configs
+  });
 
-      const ctrlContainer = await solveContorller(container, FooController);
+  describe("boot controller", () => {
+    let container: Container;
+    beforeEach(() => {
+      container = new Container();
+      container.bind(FastifyInst).toConstantValue(server);
+    });
+
+    it("should resolve and store controller instance", async () => {
+      const ctrlContainer = await solveController(container, FooController);
       const ctrlInst = ctrlContainer.get<FooController>(ControllerInst);
 
       expect(ctrlInst).toBeInstanceOf(FooController);
+    });
+
+    it("should apply fastify routes", async () => {
+      await solveController(container, FooController);
+
+      let res = await server.inject({ method: "GET", url: "/foo" });
+      expect(res.body).toBe("foo");
+      res = await server.inject({ method: "GET", url: "/foo/bar" });
+      expect(res.body).toBe("bar");
+      res = await server.inject({ method: "POST", url: "/foo/message" });
+      expect(res.body).toBe("foo controller");
     });
   });
 });

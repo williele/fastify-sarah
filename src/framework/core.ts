@@ -1,4 +1,7 @@
 import fp from "fastify-plugin";
+import { join } from "path";
+import { FastifyInstance, RouteOptions } from "fastify";
+import { Container, injectable } from "inversify";
 import {
   BootConfig,
   BootstrapOptions,
@@ -6,8 +9,6 @@ import {
   RegistryConfig,
 } from "./types";
 import { CONTROLLER_BOOT, CONTROLLER_ROUTE_BOOT } from "./metakeys";
-import { FastifyInstance, RouteOptions, RegisterOptions } from "fastify";
-import { Container, injectable } from "inversify";
 import { FastifyInst, ControllerInst } from "./tokens";
 
 /**
@@ -18,6 +19,74 @@ export const bootstrap = fp(async (inst, opts: BootstrapOptions, done) => {
   done();
 });
 
+// combine two object
+function combineObjects(a: object, b: object) {
+  const result = a;
+  Object.entries(b).forEach(([key, val]) => {
+    if (!result[key]) return (result[key] = val);
+    // merge array
+    if (Array.isArray(result[key]))
+      return (result[key] = result[key].concat(val));
+    // merge object
+    if (typeof result[key] === "object" && typeof val === "object")
+      return (result[key] = combineObjects(result[key], val));
+
+    result[key] = val;
+  });
+
+  return result;
+}
+
+const STACK_PROPERTIES = [
+  "onRequest",
+  "preParsing",
+  "preValidation",
+  "preHandler",
+  "preSerialization",
+  "onSend",
+  "onResponse",
+];
+
+// combine two config
+function combineConfigs(
+  a: Partial<RouteOptions>,
+  b: Partial<RouteOptions>
+): Partial<RouteOptions> {
+  const result = a;
+
+  Object.entries(b).forEach(([key, val]) => {
+    if (!result[key]) return (result[key] = val);
+    // join path
+    if (key === "url") return (result[key] = join(result[key]!, val));
+    // merge schema
+    if (key === "schema")
+      return (result[key] = combineObjects(result[key]!, val));
+    // stack
+    if (STACK_PROPERTIES.includes(key)) {
+      if (Array.isArray(result[key])) result[key] = result[key].concat(val);
+      else result[key] = [result[key], val];
+      return;
+    }
+    // replace
+    result[key] = val;
+  });
+
+  return result;
+}
+
+const DEFAULT_CONFIG: Partial<RouteOptions> = {
+  url: "/",
+};
+
+/**
+ * merge configures
+ */
+export function mergeConfigs(configs: Partial<RouteOptions>[]) {
+  return configs.reduce((a, b) => combineConfigs({ ...a }, { ...b }), {
+    ...DEFAULT_CONFIG,
+  });
+}
+
 /**
  * solve dependencies from config
  */
@@ -25,7 +94,8 @@ export function solveBootConfig(
   container: Container,
   config: BootConfig
 ): Partial<RouteOptions> {
-  const deps = config.deps().map((dep) => container.get(dep));
+  const deps =
+    (config.deps && config.deps().map((dep) => container.get(dep))) || [];
   return config.registry(...deps);
 }
 
@@ -41,17 +111,20 @@ export async function boot(inst: FastifyInstance, opts: BootstrapOptions) {
   // TODO: resolve async provider
 
   opts.controllers.forEach((controller) => {
-    solveContorller(rootContainer, controller);
+    solveController(rootContainer, controller);
   });
 }
 
 /**
  * solve a controller configures
  */
-export async function solveContorller(
+export async function solveController(
   container: Container,
   controller: Contructable
 ): Promise<Container> {
+  // get fastify instance
+  const inst = container.get<FastifyInstance>(FastifyInst);
+
   // make child instance of this controller
   const ctrlInst = container.resolve(controller);
   const ctrlContainer = new Container({ autoBindInjectable: true });
@@ -66,17 +139,18 @@ export async function solveContorller(
   );
 
   // get all and solve route config
-  const routeConfigs = Object.values(
-    getRouteConfig(controller)
-  ).map((configs) =>
-    ctrlConfigs.concat(
-      configs.map((config) => solveBootConfig(ctrlContainer, config))
-    )
-  );
+  const routeConfigsRaw = getRouteConfig(controller);
+  const routeConfigs = Object.values(routeConfigsRaw).map((configs) => {
+    const routeConfig = configs.map((config) => {
+      return solveBootConfig(ctrlContainer, config);
+    });
+    const config = ctrlConfigs.concat(routeConfig);
+    return mergeConfigs(config);
+  });
 
   // apply fastify route
   routeConfigs.forEach((config) => {
-    console.log(config);
+    inst.route(config as RouteOptions);
   });
 
   return ctrlContainer;
