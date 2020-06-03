@@ -1,0 +1,31 @@
+{
+  "name": "fastify-sarah",
+  "version": "1.0.0",
+  "description": "simple decorators and dependencies injection framework for fastify",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "tsc"
+  },
+  "keywords": [
+    "fastify",
+    "typescript",
+    "decorators",
+    "controllers",
+    "backend"
+  ],
+  "author": "Willie Le",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^25.2.3",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.1.0",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.3"
+  },
+  "dependencies": {
+    "fastify": "^2.14.1",
+    "fastify-plugin": "^1.6.1",
+    "reflect-metadata": "^0.1.13"
+  }
+}
