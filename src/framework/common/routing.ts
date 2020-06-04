@@ -32,3 +32,26 @@ export function Route(
     }),
   });
 }
+
+// shorthand route decorator
+export function Get(url: string, extraOption: RouteExtraOptions = {}) {
+  return Route("GET", url, extraOption);
+}
+export function Head(url: string, extraOption: RouteExtraOptions = {}) {
+  return Route("HEAD", url, extraOption);
+}
+export function Post(url: string, extraOption: RouteExtraOptions = {}) {
+  return Route("POST", url, extraOption);
+}
+export function Put(url: string, extraOption: RouteExtraOptions = {}) {
+  return Route("PUT", url, extraOption);
+}
+export function Delete(url: string, extraOption: RouteExtraOptions = {}) {
+  return Route("DELETE", url, extraOption);
+}
+export function Options(url: string, extraOption: RouteExtraOptions = {}) {
+  return Route("OPTIONS", url, extraOption);
+}
+export function Patch(url: string, extraOption: RouteExtraOptions = {}) {
+  return Route("PATCH", url, extraOption);
+}
