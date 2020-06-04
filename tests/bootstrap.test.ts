@@ -1,7 +1,11 @@
 import Fastify, { FastifyInstance } from "fastify";
 import { BootstrapOptions } from "../src/framework/types";
 import { makeRootContainer } from "../src/framework/core/bootstrap";
-import { BootstrapOpts, FastifyInst } from "../src/framework/tokens";
+import {
+  BootstrapOpts,
+  FastifyInst,
+  BootstrapConfig,
+} from "../src/framework/tokens";
 
 describe("bootstrap", () => {
   let fastify: FastifyInstance;
@@ -26,7 +30,7 @@ describe("bootstrap", () => {
           },
         },
       ],
-      // prefix: "api",
+      prefix: "api",
       // globalDecorators: [],
     };
 
@@ -37,6 +41,10 @@ describe("bootstrap", () => {
     expect(container.get(FastifyInst)).toBe(fastify);
     // should contain bootstrap options
     expect(container.get(BootstrapOpts)).toBe(options);
+    // should contain root config
+    expect(container.get(BootstrapConfig)).toEqual({
+      url: "api",
+    });
     // should resolve providers
     expect(container.get(foo)).toBe("foo");
     expect(container.get(bar)).toBe("foo bar");

@@ -4,11 +4,12 @@ import { RouteOptions } from "fastify";
 export interface BootstrapOptions {
   controllers: Constructable[]; // list of controllers
   providers?: ProvidersConfig[]; // list of providers
-  // prefix?: string; // prefix the whole urls
+  prefix?: string; // prefix the whole urls
   // globalDecorators?: any[]; // global decorators add
 }
 
 export type Constructable = { new (...args: any[]) };
+export type PartialRouteOptions = Partial<RouteOptions>;
 
 // dependencies
 export type DependencyToken = string | symbol;
@@ -25,7 +26,7 @@ export type FactoryProviderConfig<T> =
   | FactoryProvider<T>;
 
 // boot config, use for custom decorator
-export type BootConfig = FactoryProviderConfig<Partial<RouteOptions>>;
+export type BootConfig = FactoryProviderConfig<PartialRouteOptions>;
 
 interface ProviderValue {
   token: DependencyToken;
@@ -35,18 +36,7 @@ interface ProviderFactory {
   token: DependencyToken;
   useFactory: FactoryProviderConfig<any>;
 }
-interface ProviderLazy {
-  token: DependencyToken;
-  useLazy: {
-    deps?: Dependencies;
-    factory: (...args: any[]) => any;
-  };
-}
-export type ProvidersConfig =
-  | ProviderValue
-  | ProviderFactory
-  | ProviderLazy
-  | Constructable;
+export type ProvidersConfig = ProviderValue | ProviderFactory | Constructable;
 
 // registry for decorators
 export interface RegistryConfig {
@@ -56,7 +46,7 @@ export interface RegistryConfig {
     target: any;
     key?: string | symbol;
     descriptor?: PropertyDescriptor;
-  }) => FactoryProviderConfig<Partial<RouteOptions> | void>;
+  }) => FactoryProviderConfig<PartialRouteOptions | void>;
 }
 
 //

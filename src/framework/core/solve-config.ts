@@ -1,70 +1,31 @@
 /// solving core configure
 import { Container } from "inversify";
-import {
-  ProvidersConfig,
-  FactoryProviderConfig,
-  Constructable,
-} from "../types";
-import { FastifyInstance, RouteOptions } from "fastify";
-import { FastifyInst, ControllerInst } from "../tokens";
+import { Constructable, BootstrapOptions, PartialRouteOptions } from "../types";
+import { RouteOptions } from "fastify";
+import { ControllerInst, BootstrapConfig } from "../tokens";
 import { mergeConfigs } from "./merge-config";
 import { getConfig, getRouteConfig } from "./utils";
+import { solveFactoryProvider } from "./solve-providers";
 
 /**
- * solve factory providers
+ * solve root config from bootstrap options
  */
-export async function solveFactoryProvider<T>(
-  container: Container,
-  factoryConfig: FactoryProviderConfig<T>
-): Promise<any> {
-  if (typeof factoryConfig === "function") {
-    // solve directly with factory
-    return factoryConfig();
-  } else if (typeof factoryConfig === "object") {
-    // solve with dependencies
-    const { deps, factory } = factoryConfig;
+export async function solveRootConfig(opts: BootstrapOptions) {
+  const result: PartialRouteOptions = {};
 
-    const dependencies =
-      (deps && deps().map((dep) => container.get(dep))) || [];
-    return factory(...dependencies);
-  }
-}
-
-/**
- * solve list of providers
- */
-export async function solveProviders(
-  container: Container,
-  providers: ProvidersConfig[]
-) {
-  for (const provider of providers) {
-    // class
-    if (typeof provider === "function") {
-      container.bind(provider).toSelf();
-    }
-
-    // value
-    else if ("useValue" in provider) {
-      container.bind(provider.token).toConstantValue(provider.useValue);
-    }
-
-    // factory
-    else if ("useFactory" in provider) {
-      const value = await solveFactoryProvider(container, provider.useFactory);
-      container.bind(provider.token).toConstantValue(value);
-    }
-  }
+  if (opts.prefix) result.url = opts.prefix;
+  return result;
 }
 
 /**
  * solve a controller configures
  */
-export async function solveController(
+export async function solveControllerConfig(
   container: Container,
   controller: Constructable
-): Promise<Container> {
-  // get fastify instance
-  const inst = container.get<FastifyInstance>(FastifyInst);
+): Promise<RouteOptions[]> {
+  // get root config
+  const rootConfig = container.get<PartialRouteOptions>(BootstrapConfig);
 
   // make child instance of this controller
   const ctrlInst = container.resolve(controller);
@@ -88,16 +49,12 @@ export async function solveController(
         return solveFactoryProvider(ctrlContainer, config);
       });
       const routeConfig = await Promise.all(routeConfigPromises);
-      const config = ctrlConfigs.concat(routeConfig);
-      return mergeConfigs(config);
+      const config = [rootConfig, ...ctrlConfigs, ...routeConfig];
+      return mergeConfigs(config) as RouteOptions;
     }
   );
   const routeConfigs = await Promise.all(routeConfigsPromise);
 
-  // apply fastify route
-  routeConfigs.forEach((config) => {
-    inst.route(config as RouteOptions);
-  });
-
-  return ctrlContainer;
+  // return list of route configs
+  return routeConfigs;
 }
