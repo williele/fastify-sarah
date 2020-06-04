@@ -293,3 +293,38 @@ This way for define JSON Schema was greate. But it have alot of boilerplate and 
 Define json schema by decorator and class. This way will provide benifit both _reusable ability_ and _typescript sugar_.
 
 > :warning: **Upcoming feature**
+
+# How to get Fastify Instance
+
+You can inject fastify instance from custom decorator, injectable class by `FastifyInst` token. Examples
+
+On class
+
+```ts
+import { Inject, FastifyInst } from "fastify-sarah";
+import { FastifyInstance } from "fastify";
+
+@Controller()
+export class MyController {
+  constructor(@Inject(FastifyInst) fastify: FastifyInstance) {}
+}
+```
+
+On custom decorator
+
+```ts
+import { makeDecorator, FastifyInst } from "fastify-sarah";
+import { FastifyInstance } from "fastify";
+
+export function MyDecorator() {
+  return makeDecorator({
+    on: "both",
+    callback: () => ({
+      deps: () => [FastifyInst], // specify inject FastifyInst token here
+      factory: (fastify: FastifyInstance /* fastify instance come here */) => {
+        ...
+      },
+    }),
+  });
+}
+```
