@@ -1,13 +1,14 @@
 {
   "name": "fastify-sarah",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha.0",
   "description": "simple decorators and dependencies injection framework for fastify",
   "main": "./dist/public-api.js",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "rebuild": "rm -rf ./dist",
-    "build": "tsc -p ./src"
+    "prebuild": "rm -rf ./dist",
+    "build": "tsc -p ./src",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "fastify",
