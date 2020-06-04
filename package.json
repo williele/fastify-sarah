@@ -3,6 +3,10 @@
   "version": "0.0.1-alpha.3",
   "description": "a tiny dependencies injection framework for Fastify without addition runtime",
   "main": "./dist/public-api.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/williele/fastify-sarah"
+  },
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
@@ -14,6 +18,8 @@
     "fastify",
     "typescript",
     "decorators",
+    "dependency injection",
+    "json schema",
     "controllers",
     "backend"
   ],

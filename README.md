@@ -47,7 +47,7 @@ Add `tsconfig.json` for typescript with following options
 
 Make sure `experimentalDecorators` and `emitDecoratorMetadata` is always `true`. Because `fastify-sarah` is all about decorators.
 
-`ts-node-dev` will watch files watch and auto reload your code. In `package.json` file add scripts
+`ts-node-dev` will watch your files and auto reload it. In `package.json` file add scripts
 
 ```json
 // package.json
@@ -62,6 +62,8 @@ Make sure `experimentalDecorators` and `emitDecoratorMetadata` is always `true`.
   ...
 }
 ```
+
+> :warning: **`ts-node-dev` will push nortification each time your code reload**. to turn it off change `"dev"` to `"ts-node-dev --no-notify ./src/main.ts"`
 
 # Getting start
 
@@ -168,6 +170,7 @@ npm install -D @types/http-errors
 This package contain some useful http errors. Now, remove all stuff in your `MessageController` class and add these lines into it
 
 ```ts
+// src/message.controller.ts
 import { Controller, Route } from "fastify-sarah";
 import { FastifyRequest } from "fastify";
 import { randomBytes } from "crypto";
@@ -185,13 +188,16 @@ export class MessageController {
   // GET /message
   @Route("GET")
   all() {
+    // turn object into array and reply
     return Object.values(this.messages);
   }
 
   // GET /message/:id
   @Route("GET", ":id")
   get(req: FastifyRequest) {
+    // get id string from request params
     const id = req.params.id;
+    // return id exists in message object return it, else throw not found error
     if (this.messages[id]) return this.messages[id];
     else throw new NotFound(`message ${id} not exists`);
   }
@@ -199,29 +205,41 @@ export class MessageController {
   // POST /message
   @Route("POST")
   create(req: FastifyRequest) {
+    // get text from request body
     const { text } = req.body;
+    // generate random id string with 5 characters
     const id = randomBytes(5).toString("hex");
 
+    // make a new message
     const message: Message = { id, text };
+    // store the new message into object
     this.messages[id] = message;
+    // reply
     return message;
   }
 
   // PUT /message/:id
   @Route("PUT", ":id")
   update(req: FastifyRequest) {
+    // reuse `this.get` to get request id
     const message = this.get(req);
 
+    // get text from request body
     const { text } = req.body;
+    // update text
     message.text = text;
+    // reply
     return message;
   }
 
   // DELETE /message/:id
   @Route("DELETE", ":id")
   delete(req: FastifyRequest) {
+    // reuse `this.get` to get request id
     const message = this.get(req);
+    // delete message in the object
     delete this.messages[message.id];
+    // reply
     return message;
   }
 }
@@ -231,7 +249,7 @@ Now test your REST API. Noticed that a single logic find a message by id if the 
 
 #### Add route schema
 
-This is still not good enought. A good backend API always validate incoming request data and use the right [http code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for right the action. Fortunately, fastify has built in JSON Schema validate by `ajv`, Check out [Fastify validation](https://www.fastify.io/docs/latest/Validation-and-Serialization/). To add schema into route on `fastify-sarah`, there are two ways.
+This is still not good enought. A good backend API always validate incoming request data and use the right [http code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for right the action. Fortunately, fastify has built in JSON Schema validate by `ajv` make things quite easier, Check out [Fastify validation](https://www.fastify.io/docs/latest/Validation-and-Serialization/). To add schema into route on `fastify-sarah`, there are two ways.
 
 ##### 1. Original way to define route JSON schema
 
@@ -286,11 +304,11 @@ class MessageController {
 
 ```
 
-This way for define JSON Schema was greate. But it have alot of boilerplate and Typescript cannot recognize any type from body or return type. This is again the reason we are using Typescript to avoid typo. This problem can solve with type transform tools (JSON Schema to Typescript), but most of tools required extra step to generate your Type, and you have to seperact JSON Schema, Typescript Type and the actual code to multiple files. `fastify-sarah` try to fix this problem by decorators.
+This way for configuring JSON Schema was greate. But it have alot of boilerplate and Typescript cannot recognize any type from body, query, params or return type. This is again the reason we are using Typescript to avoid typo. This problem can solve with type transform tools (JSON Schema to Typescript), but most of tools required extra step to generate your Type, and you have to seperact JSON Schema, Typescript Type and the actual code into multiple files. `fastify-sarah` try to fix this problem by decorators.
 
 ##### 2. JSON schema decorator
 
-Define json schema by decorator and class. This way will provide benifit both _reusable ability_ and _typescript sugar_.
+Define json schema by decorator and class. This will provide benifit both _reusable ability_ and _typescript sugar_.
 
 > :warning: **Upcoming feature**
 
