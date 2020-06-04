@@ -1,5 +1,5 @@
 import fastify, { FastifyInstance } from "fastify";
-import { Route, Controller, Inject } from "../src/framework/decorators";
+import { Route, Controller } from "../src/framework/common/public-api";
 import { Container, injectable } from "inversify";
 import { FastifyInst, ControllerInst } from "../src/framework/tokens";
 import {

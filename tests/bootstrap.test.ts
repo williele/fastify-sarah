@@ -26,8 +26,8 @@ describe("bootstrap", () => {
           },
         },
       ],
-      prefix: "api",
-      globalDecorators: [],
+      // prefix: "api",
+      // globalDecorators: [],
     };
 
     // root container should containt all necessary dependencies

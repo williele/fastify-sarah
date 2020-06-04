@@ -249,7 +249,7 @@ Now test your REST API. Noticed that a single logic find a message by id if the 
 
 #### Add route schema
 
-This is still not good enought. A good backend API always validate incoming request data and use the right [http code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for right the action. Fortunately, fastify has built in JSON Schema validate by `ajv` make things quite easier, Check out [Fastify validation](https://www.fastify.io/docs/latest/Validation-and-Serialization/). To add schema into route on `fastify-sarah`, there are two ways.
+This is still not good enought. A good backend API always validate incoming request data and use the right [http code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) for right the action. Fortunately, fastify has built in JSON Schema validate by `ajv` make things quite easier, Check out [Fastify validation](https://www.fastify.io/docs/latest/Validation-and-Serialization/). To add schema into route on `fastify-sarah`, there are two ways.
 
 ##### 1. Original way to define route JSON schema
 

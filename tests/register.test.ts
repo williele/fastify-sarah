@@ -2,8 +2,7 @@
 import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import { NotFound } from "http-errors";
 import { randomBytes } from "crypto";
-import { Controller, Route } from "../src/framework/decorators";
-import { bootstrap } from "../src/framework/core/bootstrap";
+import { bootstrap, Controller, Route } from "../src/public-api";
 
 interface Message {
   id: string;
