@@ -1,11 +1,12 @@
 {
   "name": "fastify-sarah",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "simple decorators and dependencies injection framework for fastify",
   "main": "./dist/public-api.js",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
+    "rebuild": "rm -rf ./dist",
     "build": "tsc -p ./src"
   },
   "keywords": [
@@ -15,7 +16,7 @@
     "controllers",
     "backend"
   ],
-  "author": "Willie Le",
+  "author": "williele",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^25.2.3",
