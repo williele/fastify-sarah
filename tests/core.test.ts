@@ -32,25 +32,27 @@ describe("core", () => {
   });
 
   describe("solve boot configure", () => {
-    const container = new Container();
-    container.bind("a").toConstantValue("A");
-    container.bind("b").toConstantValue("B");
-    container.bind("c").toConstantValue("C");
+    it("should solve correctly", () => {
+      const container = new Container();
+      container.bind("a").toConstantValue("A");
+      container.bind("b").toConstantValue("B");
+      container.bind("c").toConstantValue("C");
 
-    const registry = jest.fn((b, c, a) => {
-      expect(b).toBe("B");
-      expect(c).toBe("C");
-      expect(a).toBe("A");
-      return { schema: { body: { type: "string" } } };
+      const registry = jest.fn((b, c, a) => {
+        expect(b).toBe("B");
+        expect(c).toBe("C");
+        expect(a).toBe("A");
+        return { schema: { body: { type: "string" } } };
+      });
+
+      const config = solveBootConfig(container, {
+        deps: () => ["b", "c", "a"],
+        registry,
+      });
+
+      expect(registry.mock.calls.length).toBe(1);
+      expect(config).toBe(registry.mock.results[0].value);
     });
-
-    const config = solveBootConfig(container, {
-      deps: () => ["b", "c", "a"],
-      registry,
-    });
-
-    expect(registry.mock.calls.length).toBe(1);
-    expect(config).toBe(registry.mock.results[0].value);
   });
 
   describe("merge configs", () => {
