@@ -1,18 +1,53 @@
 import { RouteOptions } from "fastify";
 
-export type Contructable = { new (...args: any[]) };
-
-export interface BootConfig {
-  deps?: () => any[]; // dependencies token
-  registry: (...args: any[]) => Partial<RouteOptions>; // registry function
-}
-
+// bootstrap configuration
 export interface BootstrapOptions {
-  controllers: Contructable[]; // list of controllers
+  controllers: Constructable[]; // list of controllers
+  providers?: ProvidersConfig[]; // list of providers
 }
+
+export type Constructable = { new (...args: any[]) };
+
+// dependencies
+export type DependencyToken = string | symbol;
+export type Dependencies = () => any[];
+export type FactoryProvider<T> =
+  | ((...args: any[]) => T)
+  | ((...args: any[]) => Promise<T>);
+
+export type FactoryProviderConfig<T> =
+  | {
+      deps?: Dependencies;
+      factory: FactoryProvider<T>;
+    }
+  | FactoryProvider<T>;
+
+// boot config, use for custom decorator
+export type BootConfig = FactoryProviderConfig<Partial<RouteOptions>>;
+
+interface ProviderValue {
+  token: DependencyToken;
+  useValue: any;
+}
+interface ProviderFactory {
+  token: DependencyToken;
+  useFactory: FactoryProviderConfig<any>;
+}
+interface ProviderLazy {
+  token: DependencyToken;
+  useLazy: {
+    deps?: Dependencies;
+    factory: (...args: any[]) => any;
+  };
+}
+export type ProvidersConfig =
+  | ProviderValue
+  | ProviderFactory
+  | ProviderLazy
+  | Constructable;
 
 export type RegistryConfig = (info: {
   target: any;
   key?: string | symbol;
   descriptor?: PropertyDescriptor;
-}) => BootConfig;
+}) => FactoryProviderConfig<Partial<RouteOptions>>;

@@ -1,8 +1,12 @@
 import fastify, { FastifyInstance } from "fastify";
-import { solveController, solveBootConfig } from "../src/framework/core";
 import { Route, Controller } from "../src/framework/decorators";
-import { Container } from "inversify";
+import { Container, injectable } from "inversify";
 import { FastifyInst, ControllerInst } from "../src/framework/tokens";
+import {
+  solveProviders,
+  solveFactoryProvider,
+  solveController,
+} from "../src/framework/core/solve-config";
 
 // test controller
 @Controller("foo")
@@ -25,33 +29,73 @@ class FooController {
   }
 }
 
+// test start here
 describe("core", () => {
   let server: FastifyInstance;
   beforeEach(() => {
     server = fastify();
   });
 
-  describe("solve boot configure", () => {
-    it("should solve correctly", () => {
+  describe("solve factory config", () => {
+    it("should solve correctly", async () => {
       const container = new Container();
       container.bind("a").toConstantValue("A");
       container.bind("b").toConstantValue("B");
       container.bind("c").toConstantValue("C");
 
-      const registry = jest.fn((b, c, a) => {
+      const factory = jest.fn((b, c, a) => {
         expect(b).toBe("B");
         expect(c).toBe("C");
         expect(a).toBe("A");
         return { schema: { body: { type: "string" } } };
       });
 
-      const config = solveBootConfig(container, {
+      const config = await solveFactoryProvider(container, {
         deps: () => ["b", "c", "a"],
-        registry,
+        factory,
       });
 
-      expect(registry.mock.calls.length).toBe(1);
-      expect(config).toBe(registry.mock.results[0].value);
+      expect(factory.mock.calls.length).toBe(1);
+      expect(config).toBe(factory.mock.results[0].value);
+    });
+  });
+
+  describe("solve providers", () => {
+    it("should solve correctly", async () => {
+      @injectable()
+      class Dummy {}
+
+      const container = new Container();
+      await solveProviders(container, [
+        {
+          token: "foo",
+          useValue: "foo",
+        },
+        {
+          token: "bar",
+          useFactory: () => "bar",
+        },
+        {
+          token: "baz",
+          useFactory: {
+            deps: () => ["bar"],
+            factory: (bar: string) => `${bar} baz`,
+          },
+        },
+        Dummy,
+      ]);
+
+      // use value
+      expect(container.get("foo")).toBe("foo");
+
+      // use factory
+      expect(container.get("bar")).toBe("bar");
+      expect(container.get("baz")).toBe("bar baz");
+
+      // use class
+      const dummy = container.get(Dummy);
+      expect(dummy).toBeInstanceOf(Dummy);
+      expect(container.get(Dummy)).toStrictEqual(dummy);
     });
   });
 

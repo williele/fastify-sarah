@@ -1,11 +1,11 @@
 import { HTTPMethod } from "fastify";
-import { makeDecorator } from "./core";
+import { makeDecorator } from "./core/public-api";
 import { ControllerInst } from "./tokens";
 
 // controller decorator
 export function Controller(url: string = "") {
   return makeDecorator(() => ({
-    registry: () => ({ url }),
+    factory: () => ({ url }),
   }));
 }
 
@@ -13,7 +13,7 @@ export function Controller(url: string = "") {
 export function Route(method: HTTPMethod, url: string = "") {
   return makeDecorator(({ descriptor }) => ({
     deps: () => [ControllerInst],
-    registry: (ctrlInst) => ({
+    factory: (ctrlInst) => ({
       method,
       url,
       handler: async (req, rep) => {
