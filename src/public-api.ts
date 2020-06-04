@@ -1,4 +1,4 @@
 export * from "./framework/core/public-api";
-export * from "./framework/decorators";
+export * from "./framework/common/public-api";
 export * from "./framework/types";
 export * from "./framework/tokens";
