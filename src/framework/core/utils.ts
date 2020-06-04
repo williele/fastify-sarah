@@ -1,6 +1,10 @@
-import { BootConfig, RegistryConfig } from "../types";
-import { CONTROLLER_BOOT, CONTROLLER_ROUTE_BOOT } from "../metakeys";
 import { injectable } from "inversify";
+import { BootConfig, RegistryConfig } from "../types";
+import {
+  CONTROLLER_BOOT,
+  CONTROLLER_ROUTE_BOOT,
+  CLASS_INJECTABLE,
+} from "../metakeys";
 
 export function getConfig(target): BootConfig[] {
   return Reflect.getOwnMetadata(CONTROLLER_BOOT, target) || [];
@@ -36,17 +40,47 @@ export function registeRouteConfig(
 }
 
 /**
+ * registe injectable for class if not already
+ */
+export function registeInjectable(target) {
+  const isInjectable =
+    Reflect.getOwnMetadata(CLASS_INJECTABLE, target) || false;
+  if (isInjectable) {
+    return target;
+  } else {
+    Reflect.defineMetadata(CLASS_INJECTABLE, true, target);
+    return injectable()(target);
+  }
+}
+
+/**
  * create class or method decorator for override config
  */
 export function makeDecorator(registry: RegistryConfig) {
   return (target, key?: string | symbol, descriptor?: PropertyDescriptor) => {
-    const config = registry({ target, key, descriptor });
+    // method decorator
+    if (
+      key !== undefined &&
+      (registry.on === "method" || registry.on === "both")
+    ) {
+      const config = registry.callback({
+        on: "method",
+        target,
+        key,
+        descriptor,
+      });
 
-    if (key !== undefined) {
-      registeRouteConfig(target.constructor, key, config);
-    } else {
-      registeConfig(target, config);
-      return injectable()(target);
+      if (config) registeRouteConfig(target.constructor, key!, config as any);
+      return;
+    }
+
+    // class decorator
+    if (registry.on === "class" || registry.on === "both") {
+      const config = registry.callback({ on: "class", target });
+
+      if (config) registeConfig(target, config as any);
+      // make controller injectable if not yet
+      return registeInjectable(target);
     }
   };
 }

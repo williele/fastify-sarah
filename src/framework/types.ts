@@ -46,8 +46,20 @@ export type ProvidersConfig =
   | ProviderLazy
   | Constructable;
 
-export type RegistryConfig = (info: {
-  target: any;
-  key?: string | symbol;
-  descriptor?: PropertyDescriptor;
-}) => FactoryProviderConfig<Partial<RouteOptions>>;
+// registry for decorators
+export interface RegistryConfig {
+  on: "class" | "method" | "both"; // default is both
+  callback: (info: {
+    on: "class" | "method";
+    target: any;
+    key?: string | symbol;
+    descriptor?: PropertyDescriptor;
+  }) => FactoryProviderConfig<Partial<RouteOptions> | void>;
+}
+
+//
+// decorators interface
+export type RouteExtraOptions = Omit<
+  RouteOptions,
+  "handler" | "method" | "url"
+>;
