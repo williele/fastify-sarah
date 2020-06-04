@@ -3,25 +3,22 @@ import { BootstrapOptions } from "../types";
 import { FastifyInstance } from "fastify";
 import { solveController, solveProviders } from "./solve-config";
 import { Container } from "inversify";
-import { FastifyInst, BootstrapOpt } from "../tokens";
+import { FastifyInst, BootstrapOpts } from "../tokens";
 
 /**
  * bootstrap
  */
 export const bootstrap = fp(async (inst, opts: BootstrapOptions, done) => {
-  await boot(inst, opts);
-  done();
-});
-
-// compile
-export async function boot(inst: FastifyInstance, opts: BootstrapOptions) {
   // create a root container
   const rootContainer = await makeRootContainer(inst, opts);
 
+  // solve controllers
   opts.controllers.forEach((controller) => {
     solveController(rootContainer, controller);
   });
-}
+
+  done();
+});
 
 /**
  * create default root container
@@ -34,7 +31,7 @@ export async function makeRootContainer(
 
   // core providers
   container.bind(FastifyInst).toConstantValue(inst);
-  container.bind(BootstrapOpt).toConstantValue(opts);
+  container.bind(BootstrapOpts).toConstantValue(opts);
 
   // provide option providers
   if (opts.providers) {

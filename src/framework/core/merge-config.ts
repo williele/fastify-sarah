@@ -26,11 +26,11 @@ const STACK_PROPERTIES = [
 ];
 
 // combine two config
-function combineConfigs(
+export function combineConfigs(
   a: Partial<RouteOptions>,
   b: Partial<RouteOptions>
 ): Partial<RouteOptions> {
-  const result = a;
+  const result = { ...a };
 
   Object.entries(b).forEach(([key, val]) => {
     if (!result[key]) return (result[key] = val);
@@ -53,8 +53,8 @@ function combineConfigs(
 }
 
 // combine two object
-function combineObjects(a: object, b: object) {
-  const result = a;
+export function combineObjects(a: object, b: object) {
+  const result = { ...a };
   Object.entries(b).forEach(([key, val]) => {
     if (!result[key]) return (result[key] = val);
     // merge array

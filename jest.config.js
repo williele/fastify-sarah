@@ -11,4 +11,5 @@ module.exports = {
   testMatch: ["**/tests/**/*.test.(ts|js)"],
   testEnvironment: "node",
   setupFiles: ["./tests/jest-polyfill.ts"],
+  collectCoverage: true,
 };

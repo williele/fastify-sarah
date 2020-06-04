@@ -20,6 +20,9 @@ export function getRouteConfig(target): { [key: string]: BootConfig[] } {
  */
 export function registeConfig(target, config: BootConfig) {
   const registers = Reflect.getOwnMetadata(CONTROLLER_BOOT, target) || [];
+  // configure should freeze
+  Object.freeze(config);
+
   registers.push(config);
   Reflect.defineMetadata(CONTROLLER_BOOT, registers, target);
 }
@@ -34,8 +37,12 @@ export function registeRouteConfig(
   config: BootConfig
 ) {
   const registers = Reflect.getOwnMetadata(CONTROLLER_ROUTE_BOOT, target) || {};
+  // configure should freeze
+  Object.freeze(config);
+
   registers[key] = registers[key] || [];
   registers[key].push(config);
+
   Reflect.defineMetadata(CONTROLLER_ROUTE_BOOT, registers, target);
 }
 

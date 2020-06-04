@@ -4,6 +4,8 @@ import { RouteOptions } from "fastify";
 export interface BootstrapOptions {
   controllers: Constructable[]; // list of controllers
   providers?: ProvidersConfig[]; // list of providers
+  // prefix?: string; // prefix the whole urls
+  // globalDecorators?: any[]; // global decorators add
 }
 
 export type Constructable = { new (...args: any[]) };
