@@ -1,54 +1,61 @@
 import {
   RegistryConfig,
   RegistryConfigInfo,
-  RegistryControllerConfig,
-  FactoryProviderConfig,
+  ControllerConfigFactory,
 } from "../types";
+import { registeInjectable, registeClass, registeProperties } from "./register";
 import {
-  registeCtrlMethodFactories,
-  registeCtrlClassFactories,
-  registeInjectable,
-} from "./register";
+  CONTROLLER_CLASS,
+  CONTROLLER_METHOD,
+  SCHEMA_METHOD,
+  SCHEMA_CLASS,
+} from "../metakeys";
 
 /**
  * create class or method decorator for override config
  */
-export function makeDecorator(
+export function makeDecorator<T>(
   registry: RegistryConfig,
-  callback: (
-    info: RegistryConfigInfo,
-    config: FactoryProviderConfig<any>
-  ) => void
+  callback: (info: RegistryConfigInfo, config: T) => void
 ) {
   return (target, key?: string, descriptor?: PropertyDescriptor) => {
     // method decorator
-    if (
-      descriptor !== undefined &&
-      (registry.on.includes("method") || registry.on.includes("all"))
-    ) {
+    const type = Reflect.getMetadata("design:type", target, key!);
+    const returnType = Reflect.getMetadata("design:returntype", target, key!);
+    const paramType = Reflect.getMetadata("design:paramtypes", target);
+    const typeInfo: Partial<RegistryConfigInfo> = {
+      type,
+      returnType,
+      paramType,
+    };
+
+    if (descriptor !== undefined && registry.on.includes("method")) {
       const info: RegistryConfigInfo = {
         on: "method",
         target,
         key,
         descriptor,
+        ...typeInfo,
       };
       const config = registry.callback(info);
       return callback(info, config as any);
     }
 
     // properties decorator
-    if (
-      key !== undefined &&
-      (registry.on.includes("properties") || registry.on.includes("all"))
-    ) {
-      const info: RegistryConfigInfo = { on: "properties", target, key };
+    if (key !== undefined && registry.on.includes("property")) {
+      const info: RegistryConfigInfo = {
+        on: "property",
+        target,
+        key,
+        ...typeInfo,
+      };
       const config = registry.callback(info);
       return callback(info, config);
     }
 
     // class decorator
-    if (registry.on.includes("class") || registry.on.includes("all")) {
-      const info: RegistryConfigInfo = { on: "class", target };
+    if (registry.on.includes("class")) {
+      const info: RegistryConfigInfo = { on: "class", target, ...typeInfo };
       const config = registry.callback(info);
       return callback(info, config);
     }
@@ -58,23 +65,49 @@ export function makeDecorator(
 /**
  * make controller decorators
  */
-export function makeControllerDecorator(registry: RegistryControllerConfig) {
-  return makeDecorator(registry, ({ on, target, key }, config) => {
-    if (on === "method") {
-      if (config)
-        registeCtrlMethodFactories(target.constructor, key as string, config);
-    } else if (on === "class") {
-      if (config) registeCtrlClassFactories(target, config);
-      return registeInjectable(target);
+export function makeControllerDecorator(
+  registry: RegistryConfig<ControllerConfigFactory>
+) {
+  return makeDecorator<ControllerConfigFactory>(
+    registry,
+    ({ on, target, key }, config) => {
+      if (on === "method") {
+        if (config) {
+          registeProperties(
+            target.constructor,
+            key as string,
+            CONTROLLER_METHOD,
+            config
+          );
+        }
+      } else if (on === "class") {
+        if (config) {
+          registeClass(target, CONTROLLER_CLASS, config);
+        }
+        return registeInjectable(target);
+      }
     }
-  });
+  );
 }
 
 /**
  * make schema decorators
  */
 export function makeSchemaDecorator(registry: RegistryConfig) {
-  return makeDecorator(registry, ({}, config) => {
-    //
+  return makeDecorator(registry, ({ on, target, key }, config) => {
+    if (on === "property") {
+      if (config) {
+        registeProperties(
+          target.constructor,
+          key as string,
+          SCHEMA_METHOD,
+          config
+        );
+      }
+    } else if (on === "class") {
+      if (config) {
+        registeClass(target, SCHEMA_CLASS, config);
+      }
+    }
   });
 }

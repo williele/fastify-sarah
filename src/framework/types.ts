@@ -1,4 +1,4 @@
-import { RouteOptions, JSONSchema } from "fastify";
+import { RouteOptions } from "fastify";
 
 // bootstrap configuration
 export interface BootstrapOptions {
@@ -44,15 +44,18 @@ export type ProvidersConfig = ProviderValue | ProviderFactory | Constructable;
 
 // registry for decorators
 export interface RegistryConfigInfo {
-  on: "class" | "method" | "properties";
+  on: "class" | "method" | "property";
   target: any;
   key?: string | symbol;
   descriptor?: PropertyDescriptor;
+  type?: any; // design:type
+  paramType?: any; // design:paramType
+  returnType?: any; // design:returnType
 }
 
-export interface RegistryConfig {
-  on: ("class" | "method" | "properties" | "all")[]; // default is both
-  callback: (info: RegistryConfigInfo) => FactoryProviderConfig<any>;
+export interface RegistryConfig<T = any> {
+  on: ("class" | "method" | "property")[]; // default is both
+  callback: (info: RegistryConfigInfo) => T;
 }
 
 export interface RegistryControllerConfig {

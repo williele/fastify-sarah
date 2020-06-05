@@ -1,85 +1,43 @@
 /// define and get metadata from target object
 
-import { FactoryProviderConfig, ControllerConfigFactory } from "../types";
-import {
-  CONTROLLER_CLASS,
-  CONTROLLER_METHOD,
-  CLASS_INJECTABLE,
-} from "../metakeys";
+import { CLASS_INJECTABLE } from "../metakeys";
 import { injectable } from "inversify";
 
 // helper function
-// config usually of factory providers
 // class store config usually an array
-export function registeClass<T = any>(
-  target,
-  symbol: symbol,
-  config: FactoryProviderConfig<T>
-) {
-  const registers: FactoryProviderConfig<T>[] =
-    Reflect.getMetadata(symbol, target) || [];
+export function registeClass<T = any>(target, metakey: symbol, config: T) {
+  const registers: T[] = Reflect.getMetadata(metakey, target) || [];
   // freeze and push the factory
   Object.freeze(config);
   registers.push(config);
 
   // define
-  Reflect.defineMetadata(symbol, registers, target);
+  Reflect.defineMetadata(metakey, registers, target);
 }
 
-// store config usually an object of factory provider config
 // this method can use for both properties and class decorators
 export function registeProperties<T = any>(
   target,
   key: string,
-  symbol: symbol,
-  config: FactoryProviderConfig<T>
+  metakey: symbol,
+  config: T
 ) {
-  const registers: { [key: string]: FactoryProviderConfig<T>[] } =
-    Reflect.getMetadata(symbol, target) || {};
+  const registers: { [key: string]: T[] } =
+    Reflect.getMetadata(metakey, target) || {};
   // freeze and store the factory
   Object.freeze(config);
   registers[key] = registers[key] || [];
   registers[key].push(config);
 
   // define
-  Reflect.defineMetadata(symbol, registers, target);
+  Reflect.defineMetadata(metakey, registers, target);
 }
 
 /**
- * register controller class factories
+ * register a boolean into metadata
  */
-export function registeCtrlClassFactories(
-  target,
-  config: ControllerConfigFactory
-) {
-  registeClass(target, CONTROLLER_CLASS, config);
-}
-
-/**
- * get controller class factories
- */
-export function getCtrlClassFactories(target): ControllerConfigFactory[] {
-  return Reflect.getMetadata(CONTROLLER_CLASS, target);
-}
-
-/**
- * register controller methods factories
- */
-export function registeCtrlMethodFactories(
-  target,
-  key: string,
-  config: ControllerConfigFactory
-) {
-  registeProperties(target, key, CONTROLLER_METHOD, config);
-}
-
-/**
- * get controller methods factories
- */
-export function getCtrlMethodFactories(
-  target
-): { [key: string]: ControllerConfigFactory[] } {
-  return Reflect.getMetadata(CONTROLLER_METHOD, target);
+export function registeBoolean(target, metakey: Symbol) {
+  Reflect.defineMetadata(metakey, true, target);
 }
 
 /**
