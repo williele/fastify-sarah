@@ -1,5 +1,5 @@
 import { Constructable } from "../types";
-import { registeInjectable } from "../core/utils";
+import { registeInjectable } from "../core/register";
 import { inject } from "inversify";
 
 // injectable decorator

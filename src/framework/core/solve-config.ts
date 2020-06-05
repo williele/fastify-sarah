@@ -4,8 +4,8 @@ import { Constructable, BootstrapOptions, PartialRouteOptions } from "../types";
 import { RouteOptions } from "fastify";
 import { ControllerInst, BootstrapConfig } from "../tokens";
 import { mergeConfigs } from "./merge-config";
-import { getConfig, getRouteConfig } from "./utils";
 import { solveFactoryProvider } from "./solve-providers";
+import { getCtrlClassFactories, getCtrlMethodFactories } from "./register";
 
 /**
  * solve root config from bootstrap options
@@ -36,13 +36,13 @@ export async function solveControllerConfig(
   ctrlContainer.bind(ControllerInst).toConstantValue(ctrlInst);
 
   // get all and solve controller config
-  const ctrlConfigsPromises = getConfig(controller).map((config) =>
+  const ctrlConfigsPromises = getCtrlClassFactories(controller).map((config) =>
     solveFactoryProvider(ctrlContainer, config)
   );
   const ctrlConfigs = await Promise.all(ctrlConfigsPromises);
 
   // get all and solve route config
-  const routeConfigsRaw = getRouteConfig(controller);
+  const routeConfigsRaw = getCtrlMethodFactories(controller);
   const routeConfigsPromise = Object.values(routeConfigsRaw).map(
     async (configs) => {
       const routeConfigPromises = configs.map((config) => {

@@ -1,4 +1,4 @@
-import { RouteOptions } from "fastify";
+import { RouteOptions, JSONSchema } from "fastify";
 
 // bootstrap configuration
 export interface BootstrapOptions {
@@ -18,6 +18,7 @@ export type FactoryProvider<T> =
   | ((...args: any[]) => T)
   | ((...args: any[]) => Promise<T>);
 
+// factory provider
 export type FactoryProviderConfig<T> =
   | {
       deps?: Dependencies;
@@ -28,6 +29,9 @@ export type FactoryProviderConfig<T> =
 // boot config, use for custom decorator
 export type BootConfig = FactoryProviderConfig<PartialRouteOptions>;
 
+export type ControllerConfigFactory = FactoryProviderConfig<PartialRouteOptions | void>;
+
+// providers
 interface ProviderValue {
   token: DependencyToken;
   useValue: any;
@@ -39,14 +43,23 @@ interface ProviderFactory {
 export type ProvidersConfig = ProviderValue | ProviderFactory | Constructable;
 
 // registry for decorators
+export interface RegistryConfigInfo {
+  on: "class" | "method" | "properties";
+  target: any;
+  key?: string | symbol;
+  descriptor?: PropertyDescriptor;
+}
+
 export interface RegistryConfig {
-  on: "class" | "method" | "both"; // default is both
-  callback: (info: {
-    on: "class" | "method";
-    target: any;
-    key?: string | symbol;
-    descriptor?: PropertyDescriptor;
-  }) => FactoryProviderConfig<PartialRouteOptions | void>;
+  on: ("class" | "method" | "properties" | "all")[]; // default is both
+  callback: (info: RegistryConfigInfo) => FactoryProviderConfig<any>;
+}
+
+export interface RegistryControllerConfig {
+  on: RegistryConfig["on"];
+  callback: (
+    info: RegistryConfigInfo
+  ) => FactoryProviderConfig<PartialRouteOptions | void>;
 }
 
 //

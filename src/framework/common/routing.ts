@@ -1,12 +1,12 @@
-import { makeDecorator } from "../../public-api";
+import { makeControllerDecorator } from "../../public-api";
 import { HTTPMethod } from "fastify";
 import { RouteExtraOptions } from "../types";
 import { ControllerInst } from "../tokens";
 
 // controller decorator
 export function Controller(url: string = "") {
-  return makeDecorator({
-    on: "class",
+  return makeControllerDecorator({
+    on: ["class"],
     callback: () => () => ({ url }),
   });
 }
@@ -17,8 +17,8 @@ export function Route(
   url: string = "",
   extraOption: RouteExtraOptions = {}
 ) {
-  return makeDecorator({
-    on: "method",
+  return makeControllerDecorator({
+    on: ["method"],
     callback: ({ descriptor }) => ({
       deps: () => [ControllerInst],
       factory: (ctrlInst) => ({

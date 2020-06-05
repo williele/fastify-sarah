@@ -1,2 +1,2 @@
 export { bootstrap } from "./bootstrap";
-export { makeDecorator } from "./decorators";
+export { makeControllerDecorator } from "./decorators";
