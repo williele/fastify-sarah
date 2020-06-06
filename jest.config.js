@@ -10,6 +10,6 @@ module.exports = {
   },
   testMatch: ["**/tests/**/*.test.(ts|js)"],
   testEnvironment: "node",
-  setupFiles: ["./tests/jest-polyfill.ts"],
+  setupFiles: ["./tests/polyfill.ts"],
   collectCoverage: true,
 };

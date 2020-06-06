@@ -1211,6 +1211,14 @@ domexception@^2.0.1:
   dependencies:
     webidl-conversions "^5.0.0"
 
+dormice@^0.0.1-alpha.1:
+  version "0.0.1-alpha.2"
+  resolved "https://registry.yarnpkg.com/dormice/-/dormice-0.0.1-alpha.2.tgz#7b261160d3f778557dee5a1a9105b70ee528d870"
+  integrity sha512-DXP7hlGaWy65ZO2c58+lIHmxd+6SJuXIqm5MgpgpLmAF3bcuhGXi6g9PYOO3/IogC1hv/2lzfQbbWlNH54I6zw==
+  dependencies:
+    inversify "^5.0.1"
+    reflect-metadata "^0.1.13"
+
 ecc-jsbn@~0.1.1:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/ecc-jsbn/-/ecc-jsbn-0.1.2.tgz#3a83a904e54353287874c564b7549386849a98c9"
