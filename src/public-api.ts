@@ -3,5 +3,9 @@
 // export * from "./framework/types";
 // export * from "./framework/tokens";
 
-export * from "./controllers";
-export * from "./decorators";
+export { bootstrap } from './bootstrap';
+export { makeControllerDecorator } from './controllers';
+export * from './decorators';
+export { makeSchemaDecorator } from './schemas';
+export * from './types';
+export * from './tokens';

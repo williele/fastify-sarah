@@ -1,10 +1,9 @@
-import fp from "fastify-plugin";
-import { processProviders, processDecorators } from "dormice";
-import { BootstrapOptions, ControllerConfig } from "./types";
-import { CONTROLLER_ROOT, CONTROLLER_SUB } from "./mtadatakeys";
-import { Fastify } from "./tokens";
-import { FastifyInstance, RouteOptions } from "fastify";
-import { mergeConfigs, mergeControllerData } from "./utils/merge-config";
+import fp from 'fastify-plugin';
+import { processProviders } from 'dormice';
+import { BootstrapOptions } from './types';
+import { Fastify } from './tokens';
+import { FastifyInstance } from 'fastify';
+import { processController } from './controllers';
 
 export const bootstrap = fp(async (inst, opts: BootstrapOptions, done) => {
   await processBootstrap(inst, opts);
@@ -22,17 +21,8 @@ export const processBootstrap = async (
     ...(opts.providers || []),
   ]);
 
-  let routes: RouteOptions[] = [];
-  for (const controller of opts.controllers) {
-    const configs = await processDecorators<ControllerConfig, ControllerConfig>(
-      controller,
-      { rootMetadata: CONTROLLER_ROOT, subMetadata: CONTROLLER_SUB },
-      container
-    );
-
-    routes = routes.concat(mergeControllerData(configs));
-  }
-
-  // apply routes
-  routes.forEach((route) => inst.route(route));
+  const controllerPromise = opts.controllers.map((ctrl) => {
+    return processController(ctrl, container);
+  });
+  await Promise.all(controllerPromise);
 };

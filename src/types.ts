@@ -1,5 +1,5 @@
-import { RouteOptions } from "fastify";
-import { Providers, Constructable } from "dormice";
+import { RouteOptions } from 'fastify';
+import { Providers, Constructable } from 'dormice';
 
 export type ControllerConfig = Partial<RouteOptions>;
 
