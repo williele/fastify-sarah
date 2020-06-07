@@ -1,4 +1,10 @@
-import { HTTPMethod, FastifyInstance } from 'fastify';
+import {
+  HTTPMethod,
+  FastifyInstance,
+  FastifyRequest,
+  FastifyReply,
+} from 'fastify';
+import { ServerResponse } from 'http';
 import { makeControllerDecorator, mergeControllerData } from '../controllers';
 import { RootInstance, SubData, PreviousData } from 'dormice';
 import { Fastify } from '../tokens';
@@ -32,7 +38,9 @@ export function Route(method: HTTPMethod, url: string = '') {
         method,
         url,
         handler: async (req, res) => {
-          return descriptor?.value.apply(inst, [req, res]);
+          const payload = await descriptor?.value.apply(inst, [req, res]);
+          if (payload === undefined) res.send();
+          return payload;
         },
       }),
     }),
@@ -47,3 +55,34 @@ export const Post = (url: string = '') => Route('POST', url);
 export const Put = (url: string = '') => Route('PUT', url);
 export const Patch = (url: string = '') => Route('PATCH', url);
 export const Delete = (url: string = '') => Route('DELETE', url);
+
+/**
+ * auth transform reponse common status codes
+ * POST: 202
+ * PUT, PATCH, DELETE: 200 (not empty), 204 (empty)
+ */
+export function CommonStatus() {
+  return makeControllerDecorator({
+    on: ['method', 'class'],
+    callback: () => () => ({
+      onSend: async (
+        req: FastifyRequest,
+        rep: FastifyReply<ServerResponse>,
+        payload: any
+      ) => {
+        switch (req.raw.method) {
+          case 'POST':
+            rep.code(202);
+            return;
+          case 'PUT':
+          case 'PATCH':
+          case 'DELETE':
+            if (payload === undefined) rep.code(204);
+            else return;
+          default:
+            return;
+        }
+      },
+    }),
+  });
+}

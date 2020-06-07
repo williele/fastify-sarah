@@ -1,23 +1,23 @@
-import Fastify from "fastify";
-import { processBootstrap } from "../src/bootstrap";
-import { Controller, Route } from "../src/decorators";
+import Fastify from 'fastify';
+import { processBootstrap } from '../src/bootstrap';
+import { Controller, Route } from '../src/common/public-api';
 
-describe("bootstrap", () => {
-  it("should bootstrap correctly", async () => {
+describe('bootstrap', () => {
+  it('should bootstrap correctly', async () => {
     const fastify = Fastify();
 
-    @Controller("test")
+    @Controller('test')
     class TestController {
-      @Route("GET")
+      @Route('GET')
       all() {}
 
-      @Route("POST")
+      @Route('POST')
       create() {}
     }
 
     @Controller()
     class FooController {
-      @Route("GET")
+      @Route('GET')
       all() {}
     }
 

@@ -1,8 +1,15 @@
 import Fastify, { FastifyInstance, FastifyRequest } from 'fastify';
 import { randomBytes } from 'crypto';
 import { NotFound } from 'http-errors';
-import { Controller, Delete, Put, Post, Get } from '../src/decorators';
-import { bootstrap } from '../src/bootstrap';
+import {
+  Controller,
+  Delete,
+  Put,
+  Post,
+  Get,
+  bootstrap,
+  CommonStatus,
+} from '../src/public-api';
 
 describe('end to end', () => {
   let fastify: FastifyInstance;
@@ -13,6 +20,7 @@ describe('end to end', () => {
   }
 
   @Controller('messages')
+  @CommonStatus()
   class MessageController {
     messages: { [key: string]: Message } = {};
 
@@ -50,7 +58,7 @@ describe('end to end', () => {
     delete(req: FastifyRequest) {
       const message = this.get(req);
       delete this.messages[message.id];
-      return message;
+      return;
     }
   }
 
@@ -75,7 +83,7 @@ describe('end to end', () => {
       .post('/messages')
       .body({ text: 'first message' })
       .end();
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(202);
     expect(result.json()).toHaveProperty('text', 'first message');
     const firstMessage = result.json();
 
@@ -96,7 +104,7 @@ describe('end to end', () => {
       .post('/messages')
       .body({ text: 'second message' })
       .end();
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(202);
     expect(result.json()).toHaveProperty('text', 'second message');
     let secondMessage = result.json();
 
@@ -118,8 +126,7 @@ describe('end to end', () => {
       .inject()
       .delete(`/messages/${secondMessage.id}`)
       .end();
-    expect(result.statusCode).toBe(200);
-    expect(result.json()).toHaveProperty('id', secondMessage.id);
+    expect(result.statusCode).toBe(204);
 
     // all
     result = await fastify.inject().get('/messages').end();
