@@ -4,3 +4,4 @@
 // export * from "./framework/tokens";
 
 export * from "./controllers";
+export * from "./decorators";

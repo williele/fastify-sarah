@@ -1212,9 +1212,9 @@ domexception@^2.0.1:
     webidl-conversions "^5.0.0"
 
 dormice@^0.0.1-alpha.1:
-  version "0.0.1-alpha.3"
-  resolved "https://registry.yarnpkg.com/dormice/-/dormice-0.0.1-alpha.3.tgz#d233160063e363a6150020f7c806475b2c85aeee"
-  integrity sha512-GNXOrJmXi5b5MecEPPfkbch+f8o04+LvmUqGlfItSvFkO2bPVkG3H8Tq+2yuIYwpL5PXQ85B2uRRlljTVejZqg==
+  version "0.0.1-alpha.4"
+  resolved "https://registry.yarnpkg.com/dormice/-/dormice-0.0.1-alpha.4.tgz#36887c75a46046792ce74e37b1a02e209115cdf4"
+  integrity sha512-+s0yusHEOCXCie7plAYjhsyxWzgsbFGdzzuMDRGArb2KkMYBrSKlUB7OyP2MgziqY/dE5rKaB3R0lyb0XqkJZQ==
   dependencies:
     inversify "^5.0.1"
     reflect-metadata "^0.1.13"
