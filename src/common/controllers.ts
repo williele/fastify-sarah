@@ -1,8 +1,8 @@
 import { HTTPMethod, FastifyInstance } from 'fastify';
-import { makeControllerDecorator, mergeControllerData } from './controllers';
+import { makeControllerDecorator, mergeControllerData } from '../controllers';
 import { RootInstance, SubData, PreviousData } from 'dormice';
-import { Fastify } from './tokens';
-import { ControllerConfig } from './types';
+import { Fastify } from '../tokens';
+import { ControllerConfig } from '../types';
 
 export function Controller(url: string = '') {
   return makeControllerDecorator({

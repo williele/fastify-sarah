@@ -5,7 +5,8 @@
 
 export { bootstrap } from './bootstrap';
 export { makeControllerDecorator } from './controllers';
-export * from './decorators';
 export { makeSchemaDecorator } from './schemas';
 export * from './types';
 export * from './tokens';
+
+export * from './common/public-api';
