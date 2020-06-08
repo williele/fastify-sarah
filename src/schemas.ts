@@ -4,7 +4,6 @@ import {
   Constructable,
   processDecorators,
   Container,
-  DecoratorData,
 } from "dormice";
 import { SCHEMA_ROOT, SCHEMA_SUB } from "./metadatakeys";
 import { JSONSchema } from "fastify";
@@ -28,14 +27,11 @@ export function mergeSchemaData(
   sub: { [key: string]: JSONSchema[] },
   root: JSONSchema[]
 ) {
-  const properties: JSONSchema = {};
+  const subs = Object.values(sub).map((configs) =>
+    configs.reduce((a, b) => combineObjects(a, b), {})
+  );
 
-  Object.entries(sub).forEach(([key, configs]) => {
-    const schema = configs.reduce((a, b) => combineObjects(a, b), {});
-    properties[key] = schema;
-  });
-
-  return root.concat({ properties }).reduce((a, b) => combineObjects(a, b), {});
+  return root.concat(subs).reduce((a, b) => combineObjects(a, b), {});
 }
 
 /**
