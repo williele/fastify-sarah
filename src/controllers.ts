@@ -1,10 +1,10 @@
-import { makeDecorator, processDecorators } from 'dormice';
-import { DecoratorConfig, Constructable } from 'dormice/dist/types';
-import { ControllerConfig } from './types';
-import { CONTROLLER_SUB, CONTROLLER_ROOT } from './metadatakeys';
-import { RouteOptions } from 'fastify';
-import { mergeConfigs } from './utils/merge-config';
-import { Container } from 'inversify';
+import { makeDecorator, processDecorators } from "dormice";
+import { DecoratorConfig, Constructable } from "dormice/dist/types";
+import { ControllerConfig } from "./types";
+import { CONTROLLER_SUB, CONTROLLER_ROOT } from "./metadatakeys";
+import { RouteOptions } from "fastify";
+import { mergeConfigs } from "./utils/merge-config";
+import { Container } from "inversify";
 
 /**
  * make a custom decorator controller
