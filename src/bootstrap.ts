@@ -1,9 +1,9 @@
-import fp from 'fastify-plugin';
-import { processProviders } from 'dormice';
-import { BootstrapOptions } from './types';
-import { Fastify } from './tokens';
-import { FastifyInstance } from 'fastify';
-import { processController } from './controllers';
+import fp from "fastify-plugin";
+import { createContainer } from "dormice";
+import { BootstrapOptions } from "./types";
+import { Fastify } from "./tokens";
+import { FastifyInstance } from "fastify";
+import { processController } from "./controllers";
 
 export const bootstrap = fp(async (inst, opts: BootstrapOptions, done) => {
   await processBootstrap(inst, opts);
@@ -16,7 +16,7 @@ export const processBootstrap = async (
   opts: BootstrapOptions
 ) => {
   // create a new container
-  const container = await processProviders([
+  const container = await createContainer([
     { token: Fastify, useValue: inst },
     ...(opts.providers || []),
   ]);

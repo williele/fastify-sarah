@@ -3,16 +3,16 @@ import {
   FastifyInstance,
   FastifyRequest,
   FastifyReply,
-} from 'fastify';
-import { ServerResponse } from 'http';
-import { makeControllerDecorator, mergeControllerData } from '../controllers';
-import { RootInstance, SubData, PreviousData } from 'dormice';
-import { Fastify } from '../tokens';
-import { ControllerConfig } from '../types';
+} from "fastify";
+import { ServerResponse } from "http";
+import { makeControllerDecorator, mergeControllerData } from "../controllers";
+import { RootInstance, SubData, PreviousData } from "dormice";
+import { Fastify } from "../tokens";
+import { ControllerConfig } from "../types";
 
-export function Controller(url: string = '') {
+export function Controller(url: string = "") {
   return makeControllerDecorator({
-    on: ['class'],
+    on: ["class"],
     callback: () => ({
       deps: () => [Fastify, SubData, PreviousData],
       factory: (
@@ -29,9 +29,9 @@ export function Controller(url: string = '') {
   });
 }
 
-export function Route(method: HTTPMethod, url: string = '') {
+export function Route(method: HTTPMethod, url: string = "") {
   return makeControllerDecorator({
-    on: ['method'],
+    on: ["method"],
     callback: ({ descriptor }) => ({
       deps: () => [RootInstance],
       factory: (inst) => ({
@@ -48,22 +48,22 @@ export function Route(method: HTTPMethod, url: string = '') {
 }
 
 // shorthand route
-export const Get = (url: string = '') => Route('GET', url);
-export const Head = (url: string = '') => Route('HEAD', url);
-export const Options = (url: string = '') => Route('OPTIONS', url);
-export const Post = (url: string = '') => Route('POST', url);
-export const Put = (url: string = '') => Route('PUT', url);
-export const Patch = (url: string = '') => Route('PATCH', url);
-export const Delete = (url: string = '') => Route('DELETE', url);
+export const Get = (url: string = "") => Route("GET", url);
+export const Head = (url: string = "") => Route("HEAD", url);
+export const Options = (url: string = "") => Route("OPTIONS", url);
+export const Post = (url: string = "") => Route("POST", url);
+export const Put = (url: string = "") => Route("PUT", url);
+export const Patch = (url: string = "") => Route("PATCH", url);
+export const Delete = (url: string = "") => Route("DELETE", url);
 
 /**
  * auth transform reponse common status codes
  * POST: 202
- * PUT, PATCH, DELETE: 200 (not empty), 204 (empty)
+ * Another: 200 (not empty), 204 (empty)
  */
 export function CommonStatus() {
   return makeControllerDecorator({
-    on: ['method', 'class'],
+    on: ["method", "class"],
     callback: () => () => ({
       onSend: async (
         req: FastifyRequest,
@@ -71,16 +71,14 @@ export function CommonStatus() {
         payload: any
       ) => {
         switch (req.raw.method) {
-          case 'POST':
+          case "POST":
             rep.code(202);
             return;
-          case 'PUT':
-          case 'PATCH':
-          case 'DELETE':
-            if (payload === undefined) rep.code(204);
-            else return;
           default:
-            return;
+            if (payload === undefined) {
+              rep.code(204);
+              return;
+            } else return;
         }
       },
     }),
