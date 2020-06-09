@@ -1,5 +1,14 @@
 import { processSchema } from "../src/schemas";
-import { ObjectType, Prop, Exclude, RawProp } from "../src/common/schemas";
+import {
+  ObjectType,
+  Prop,
+  Exclude,
+  StringType,
+  ArrayType,
+  Required,
+  PartialAll,
+  Partial,
+} from "../src/common/schemas";
 
 describe("schemas", () => {
   @ObjectType()
@@ -45,15 +54,27 @@ describe("schemas", () => {
     });
   });
 
-  it("should parse to array and raw schema correctly", async () => {
+  it("should parse more advance schema", async () => {
     @ObjectType()
+    @Required("id", "title", "categories")
     class Product {
-      @Prop() id: string;
-      @RawProp({ minLength: 4 }) @Prop() title: string;
+      @StringType() id: string;
+      @StringType({ minLength: 4 }) title: string;
 
-      @RawProp({ minItems: 1 })
-      @Prop(() => String)
+      @ArrayType({ minItems: 1 })
+      @StringType({ format: "date" })
       categories: string[];
+    }
+
+    @Exclude("id")
+    @Partial("categories")
+    class CreateProductDto extends Product {}
+
+    @Required("confirm")
+    @PartialAll()
+    class UpdateTodoDto extends CreateProductDto {
+      @StringType({ minLength: 1 })
+      confirm: string;
     }
 
     let configs = await processSchema(Product);
@@ -62,8 +83,43 @@ describe("schemas", () => {
       properties: {
         id: { type: "string" },
         title: { type: "string", minLength: 4 },
-        categories: { type: "array", items: { type: "string" }, minItems: 1 },
+        categories: {
+          type: "array",
+          minItems: 1,
+          items: { type: "string", format: "date" },
+        },
       },
+      required: ["id", "title", "categories"],
+    });
+
+    configs = await processSchema(CreateProductDto);
+
+    expect(configs.result).toEqual({
+      type: "object",
+      properties: {
+        title: { type: "string", minLength: 4 },
+        categories: {
+          type: "array",
+          minItems: 1,
+          items: { type: "string", format: "date" },
+        },
+      },
+      required: ["title"],
+    });
+
+    configs = await processSchema(UpdateTodoDto);
+    expect(configs.result).toEqual({
+      type: "object",
+      properties: {
+        title: { type: "string", minLength: 4 },
+        categories: {
+          type: "array",
+          minItems: 1,
+          items: { type: "string", format: "date" },
+        },
+        confirm: { type: "string", minLength: 1 },
+      },
+      required: ["confirm"],
     });
   });
 });
