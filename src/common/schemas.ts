@@ -1,17 +1,21 @@
 import { makeSchemaDecorator, typeToSchema, mergeSchemaData } from "../schemas";
-import { SubData, PreviousData, Result } from "dormice";
+import { PreviousData, Result, SubResult } from "dormice";
 import { JSONSchema } from "fastify";
+import { combineObjects } from "../utils/merge-config";
 
 /**
  * schema decorator, use on class
  */
-export function Schema() {
+export function ObjectType() {
   return makeSchemaDecorator({
     on: ["class"],
     callback: () => ({
-      deps: () => [SubData, PreviousData],
-      factory: (sub: { [key: string]: JSONSchema[] }, root: JSONSchema[]) => {
-        return mergeSchemaData(sub, [{ type: "object" }, ...root]);
+      deps: () => [SubResult, PreviousData],
+      factory: (
+        subResult: { [key: string]: JSONSchema },
+        root: JSONSchema[]
+      ) => {
+        return mergeSchemaData(subResult, [{ type: "object" }, ...root]);
       },
     }),
   });
@@ -20,15 +24,30 @@ export function Schema() {
 /**
  * property decorator, use on property
  */
-export function Property() {
+export function Prop(customType?: () => any) {
   return makeSchemaDecorator({
     on: ["property"],
     callback: ({ type, key }) => ({
       deps: () => [Result],
-      factory: (result) => ({
-        properties: { [key!]: typeToSchema(type) },
-        ...result,
-      }),
+      factory: (result) => {
+        return combineObjects(result || {}, {
+          properties: { [key!]: typeToSchema(type, customType) },
+        });
+      },
+    }),
+  });
+}
+
+export function RawProp(schema: JSONSchema) {
+  return makeSchemaDecorator({
+    on: ["property"],
+    callback: ({ key }) => ({
+      deps: () => [Result],
+      factory: (result) => {
+        return combineObjects(result || {}, {
+          properties: { [key!]: schema },
+        });
+      },
     }),
   });
 }

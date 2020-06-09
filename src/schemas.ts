@@ -24,12 +24,10 @@ export function makeSchemaDecorator(config: DecoratorConfig<any>) {
  * helper function to merge schema data
  */
 export function mergeSchemaData(
-  sub: { [key: string]: JSONSchema[] },
+  sub: { [key: string]: JSONSchema },
   root: JSONSchema[]
 ) {
-  const subs = Object.values(sub).map((configs) =>
-    configs.reduce((a, b) => combineObjects(a, b), {})
-  );
+  const subs = Object.values(sub);
 
   return root.concat(subs).reduce((a, b) => combineObjects(a, b), {});
 }
@@ -38,15 +36,26 @@ export function mergeSchemaData(
  * turn javascript to JSON schema
  * @param type javscript type
  */
-export function typeToSchema(type: any) {
-  switch (type) {
+export function typeToSchema(type: any, customType?: () => any) {
+  // if type if array
+  if (type === Array) {
+    if (customType === undefined) {
+      throw new Error(`for array property you need to specify items type`);
+    }
+
+    return { type: "array", items: typeToSchema(customType()) };
+  }
+
+  // use custom type if exists
+  switch (customType ? customType() : type) {
     case String:
       return { type: "string" };
+    case Date:
+      return { type: "string", format: "date" };
     case Number:
       return { type: "number" };
     case Boolean:
       return { type: "boolean" };
-
     default:
       return {};
   }

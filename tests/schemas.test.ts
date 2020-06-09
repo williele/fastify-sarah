@@ -1,12 +1,12 @@
 import { processSchema } from "../src/schemas";
-import { Schema, Property, Exclude } from "../src/common/schemas";
+import { ObjectType, Prop, Exclude, RawProp } from "../src/common/schemas";
 
 describe("schemas", () => {
-  @Schema()
+  @ObjectType()
   class Todo {
-    @Property() id: string;
-    @Property() title: string;
-    @Property() completed: boolean;
+    @Prop() id: string;
+    @Prop() title: string;
+    @Prop() completed: boolean;
   }
 
   it("should process schema correctly", async () => {
@@ -41,6 +41,28 @@ describe("schemas", () => {
       type: "object",
       properties: {
         completed: { type: "boolean" },
+      },
+    });
+  });
+
+  it("should parse to array and raw schema correctly", async () => {
+    @ObjectType()
+    class Product {
+      @Prop() id: string;
+      @RawProp({ minLength: 4 }) @Prop() title: string;
+
+      @RawProp({ minItems: 1 })
+      @Prop(() => String)
+      categories: string[];
+    }
+
+    let configs = await processSchema(Product);
+    expect(configs.result).toEqual({
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        title: { type: "string", minLength: 4 },
+        categories: { type: "array", items: { type: "string" }, minItems: 1 },
       },
     });
   });
