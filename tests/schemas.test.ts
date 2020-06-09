@@ -1,21 +1,23 @@
 import { processSchema } from "../src/schemas";
 import {
   ObjectType,
-  Prop,
   Exclude,
-  StringType,
-  ArrayType,
+  StringProp,
+  ArrayProp,
   Required,
   PartialAll,
   Partial,
+  NumProp,
+  BoolProp,
+  ObjectProp,
 } from "../src/common/schemas";
 
 describe("schemas", () => {
   @ObjectType()
   class Todo {
-    @Prop() id: string;
-    @Prop() title: string;
-    @Prop() completed: boolean;
+    @StringProp() id: string;
+    @StringProp() title: string;
+    @BoolProp() completed: boolean;
   }
 
   it("should process schema correctly", async () => {
@@ -56,28 +58,51 @@ describe("schemas", () => {
 
   it("should parse more advance schema", async () => {
     @ObjectType()
+    @Required("id", "name")
+    class Category {
+      @StringProp() id: string;
+      @StringProp() name: string;
+    }
+
+    @ObjectType()
     @Required("id", "title", "categories")
     class Product {
-      @StringType() id: string;
-      @StringType({ minLength: 4 }) title: string;
+      @StringProp() id: string;
+      @StringProp({ minLength: 4 }) title: string;
 
-      @ArrayType({ minItems: 1 })
-      @StringType({ format: "date" })
-      categories: string[];
+      @ArrayProp({ minItems: 1 })
+      @ObjectProp(() => Category)
+      categories: (Category | string)[];
     }
 
     @Exclude("id")
     @Partial("categories")
-    class CreateProductDto extends Product {}
+    class CreateProductDto extends Product {
+      @ArrayProp()
+      @StringProp()
+      categories: string[];
+    }
 
     @Required("confirm")
     @PartialAll()
     class UpdateTodoDto extends CreateProductDto {
-      @StringType({ minLength: 1 })
+      @StringProp({ minLength: 1 })
       confirm: string;
     }
 
-    let configs = await processSchema(Product);
+    // Category
+    let configs = await processSchema(Category);
+    expect(configs.result).toEqual({
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        name: { type: "string" },
+      },
+      required: ["id", "name"],
+    });
+
+    // Product
+    configs = await processSchema(Product);
     expect(configs.result).toEqual({
       type: "object",
       properties: {
@@ -86,37 +111,37 @@ describe("schemas", () => {
         categories: {
           type: "array",
           minItems: 1,
-          items: { type: "string", format: "date" },
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              name: { type: "string" },
+            },
+            required: ["id", "name"],
+          },
         },
       },
       required: ["id", "title", "categories"],
     });
 
+    // CreateProductDto
     configs = await processSchema(CreateProductDto);
-
     expect(configs.result).toEqual({
       type: "object",
       properties: {
         title: { type: "string", minLength: 4 },
-        categories: {
-          type: "array",
-          minItems: 1,
-          items: { type: "string", format: "date" },
-        },
+        categories: { type: "array", items: { type: "string" } },
       },
       required: ["title"],
     });
 
+    // UpdateProductDto
     configs = await processSchema(UpdateTodoDto);
     expect(configs.result).toEqual({
       type: "object",
       properties: {
         title: { type: "string", minLength: 4 },
-        categories: {
-          type: "array",
-          minItems: 1,
-          items: { type: "string", format: "date" },
-        },
+        categories: { type: "array", items: { type: "string" } },
         confirm: { type: "string", minLength: 1 },
       },
       required: ["confirm"],

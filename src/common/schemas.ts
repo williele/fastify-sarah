@@ -1,18 +1,20 @@
-import { makeSchemaDecorator, typeToSchema, mergeSchemaData } from "../schemas";
+import { makeSchemaDecorator, mergeSchemaData } from "../schemas";
 import { PreviousData, Result, SubResult } from "dormice";
 import { JSONSchema } from "fastify";
-import { combineObjects } from "../utils/merge-config";
 import {
   StringTypeOptions,
   NumTypeOptions,
   BoolTypeOptions,
   ArrayTypeOptions,
+  TypeAll,
+  ObjectTypeOptions,
 } from "../types";
+import { ProcessSchema } from "../tokens";
 
 /**
  * schema decorator, use on class
  */
-export function ObjectType() {
+export function ObjectType(opts: ObjectTypeOptions = {}) {
   return makeSchemaDecorator({
     on: ["class"],
     callback: () => ({
@@ -23,7 +25,7 @@ export function ObjectType() {
       ) => {
         const obj: any = mergeSchemaData({}, [{ type: "object" }, ...root]);
         obj.properties = properties;
-        return obj;
+        return { ...obj, ...opts };
       },
     }),
   });
@@ -31,8 +33,9 @@ export function ObjectType() {
 
 /**
  * schema decorator, use on top of property decorators
+ * @param opts array options
  */
-export function ArrayType(opts: ArrayTypeOptions = {}) {
+export function ArrayProp(opts: ArrayTypeOptions = {}) {
   return makeSchemaDecorator({
     on: ["property"],
     callback: () => ({
@@ -43,16 +46,31 @@ export function ArrayType(opts: ArrayTypeOptions = {}) {
 }
 
 /**
- * property decorator, use on property
+ * schema decorator, use on property
+ * @param type function that return a ObjectType
  */
-export function Prop(customType?: () => any) {
+export function ObjectProp(type: () => any) {
   return makeSchemaDecorator({
     on: ["property"],
-    callback: ({ type }) => ({
-      deps: () => [Result],
-      factory: (result) => {
-        return combineObjects(typeToSchema(type, customType), result || {});
+    callback: () => ({
+      deps: () => [ProcessSchema],
+      factory: async (processSchema) => {
+        const configs = await processSchema(type());
+        return configs.result;
       },
+    }),
+  });
+}
+
+/**
+ * property decorator, use on property
+ */
+export function Prop(opts: TypeAll) {
+  return makeSchemaDecorator({
+    on: ["property"],
+    callback: () => ({
+      deps: () => [Result],
+      factory: (result) => ({ ...result, ...opts }),
     }),
   });
 }
@@ -61,7 +79,7 @@ export function Prop(customType?: () => any) {
  * string decorator, use on schema property
  * @param opts string type options
  */
-export function StringType(opts: StringTypeOptions = {}) {
+export function StringProp(opts: StringTypeOptions = {}) {
   return makeSchemaDecorator({
     on: ["property"],
     callback: () => () => ({ type: "string", ...opts }),
@@ -72,7 +90,7 @@ export function StringType(opts: StringTypeOptions = {}) {
  * number decorator, use on schema property
  * @param opts number type options
  */
-export function NumType(opts: NumTypeOptions = {}) {
+export function NumProp(opts: NumTypeOptions = {}) {
   return makeSchemaDecorator({
     on: ["property"],
     callback: () => () => ({ type: "number", ...opts }),
@@ -83,7 +101,7 @@ export function NumType(opts: NumTypeOptions = {}) {
  * integer decorator, use on schema property
  * @param opts integer type options
  */
-export function IntType(opts: NumTypeOptions = {}) {
+export function IntProp(opts: NumTypeOptions = {}) {
   return makeSchemaDecorator({
     on: ["property"],
     callback: () => () => ({ type: "integer", ...opts }),
@@ -94,7 +112,7 @@ export function IntType(opts: NumTypeOptions = {}) {
  * boolean decorator, use on schema property
  * @param opts boolean type options
  */
-export function BoolType(opts: BoolTypeOptions = {}) {
+export function BoolProp(opts: BoolTypeOptions = {}) {
   return makeSchemaDecorator({
     on: ["property"],
     callback: () => () => ({ type: "boolean", ...opts }),

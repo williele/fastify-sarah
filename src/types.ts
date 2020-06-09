@@ -14,6 +14,11 @@ export interface TypeOptions {
   [key: string]: any;
 }
 
+export type ObjectTypeOptions = Omit<TypeOptions, "type"> & {
+  minProperties?: number;
+  maxProperties?: number;
+};
+
 export type ArrayTypeOptions = Omit<TypeOptions, "type"> & {
   minItems?: number;
   maxItems?: number;
@@ -44,3 +49,9 @@ export type NumTypeOptions = Omit<TypeOptions, "type"> & {
 export type BoolTypeOptions = Omit<TypeOptions, "type"> & {
   default?: boolean;
 };
+
+export type TypeAll = TypeOptions &
+  ArrayTypeOptions &
+  StringTypeOptions &
+  NumTypeOptions &
+  BoolTypeOptions;

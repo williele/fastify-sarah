@@ -4,10 +4,13 @@ import {
   Constructable,
   processDecorators,
   Container,
+  createContainer,
+  ParentContainer,
 } from "dormice";
 import { SCHEMA_ROOT, SCHEMA_SUB } from "./metadatakeys";
 import { JSONSchema } from "fastify";
 import { combineObjects } from "./utils/merge-config";
+import { ProcessSchema } from "./tokens";
 
 /**
  * make custom schema decorator
@@ -33,43 +36,31 @@ export function mergeSchemaData(
 }
 
 /**
- * turn javascript to JSON schema
- * @param type javscript type
- */
-export function typeToSchema(type: any, customType?: () => any) {
-  // if type if array
-  if (type === Array) {
-    if (customType === undefined) {
-      throw new Error(`for array property you need to specify items type`);
-    }
-
-    return { type: "array", items: typeToSchema(customType()) };
-  }
-
-  // use custom type if exists
-  switch (customType ? customType() : type) {
-    case String:
-      return { type: "string" };
-    case Date:
-      return { type: "string", format: "date" };
-    case Number:
-      return { type: "number" };
-    case Boolean:
-      return { type: "boolean" };
-    default:
-      return {};
-  }
-}
-
-/**
  * process schema from decorators
  * @param target schema class
  * @param container optional parent container
  */
-export function processSchema(target: Constructable, container?: Container) {
+export async function processSchema(
+  target: Constructable,
+  container?: Container
+) {
+  const processContainer = await createContainer(
+    [
+      {
+        token: ProcessSchema,
+        useFactory: {
+          deps: () => [ParentContainer],
+          factory: (parentContainer) => (target) =>
+            processSchema(target, parentContainer),
+        },
+      },
+    ],
+    container
+  );
+
   return processDecorators(
     target,
     { rootMetadata: SCHEMA_ROOT, subMetadata: SCHEMA_SUB },
-    container
+    processContainer
   );
 }
