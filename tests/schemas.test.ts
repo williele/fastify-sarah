@@ -1,4 +1,4 @@
-import { processSchema } from "../src/schemas";
+import { processSchema, parseSchema } from "../src/schemas";
 import {
   ObjectType,
   Exclude,
@@ -7,7 +7,6 @@ import {
   Required,
   PartialAll,
   Partial,
-  NumProp,
   BoolProp,
   ObjectProp,
 } from "../src/common/schemas";
@@ -19,6 +18,37 @@ describe("schemas", () => {
     @StringProp() title: string;
     @BoolProp() completed: boolean;
   }
+
+  it("should parse schema from type correctly", async () => {
+    let result = await parseSchema(String, String, { minLength: 2 });
+    expect(result).toEqual({ type: "string", minLength: 2 });
+
+    result = await parseSchema(Array, String);
+    expect(result).toEqual({ type: "array", items: { type: "string" } });
+
+    result = await parseSchema(Todo, Todo);
+    expect(result).toEqual({
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        title: { type: "string" },
+        completed: { type: "boolean" },
+      },
+    });
+
+    result = await parseSchema(Array, Todo);
+    expect(result).toEqual({
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          title: { type: "string" },
+          completed: { type: "boolean" },
+        },
+      },
+    });
+  });
 
   it("should process schema correctly", async () => {
     const configs = await processSchema(Todo);

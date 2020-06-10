@@ -1,6 +1,6 @@
-import Fastify, { FastifyInstance, FastifyRequest } from 'fastify';
-import { randomBytes } from 'crypto';
-import { NotFound } from 'http-errors';
+import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
+import { randomBytes } from "crypto";
+import { NotFound } from "http-errors";
 import {
   Controller,
   Delete,
@@ -9,17 +9,32 @@ import {
   Get,
   bootstrap,
   CommonStatus,
-} from '../src/public-api';
+  Body,
+  ObjectType,
+  StringProp,
+  Exclude,
+  Required,
+  PartialAll,
+  Param,
+} from "../src/public-api";
 
-describe('end to end', () => {
+describe("end to end", () => {
   let fastify: FastifyInstance;
 
-  interface Message {
-    id: string;
-    text: string;
+  @ObjectType()
+  @Required("id", "text")
+  class Message {
+    @StringProp() id: string;
+    @StringProp() text: string;
   }
 
-  @Controller('messages')
+  @Exclude("id")
+  class MessageInput extends Message {}
+  class CreateMessageInput extends MessageInput {}
+  @PartialAll()
+  class UpdateMessageInput extends MessageInput {}
+
+  @Controller("messages")
   @CommonStatus()
   class MessageController {
     messages: { [key: string]: Message } = {};
@@ -29,34 +44,33 @@ describe('end to end', () => {
       return Object.values(this.messages);
     }
 
-    @Get(':id')
-    get(req: FastifyRequest) {
-      if (this.messages[req.params.id]) return this.messages[req.params.id];
-      else throw new NotFound('message not found');
+    @Get(":id")
+    get(@Param("id") id: string) {
+      if (this.messages[id]) return this.messages[id];
+      else throw new NotFound("message not found");
     }
 
     @Post()
-    create(req: FastifyRequest) {
-      const { text } = req.body;
-      const id = randomBytes(5).toString('hex');
-      const message: Message = { id, text };
+    create(@Body() input: CreateMessageInput) {
+      const id = randomBytes(5).toString("hex");
+      const message: Message = { ...input, id };
 
       this.messages[id] = message;
       return message;
     }
 
-    @Put('/:id')
-    update(req: FastifyRequest) {
-      const message = this.get(req);
-      const { text } = req.body;
+    @Put(":id")
+    update(@Param("id") id: string, @Body() input: UpdateMessageInput) {
+      const message = this.get(id);
+      const { text } = input;
 
       message.text = text;
       return message;
     }
 
-    @Delete('/:id')
-    delete(req: FastifyRequest) {
-      const message = this.get(req);
+    @Delete(":id")
+    delete(@Param("id") id: string) {
+      const message = this.get(id);
       delete this.messages[message.id];
       return;
     }
@@ -66,29 +80,37 @@ describe('end to end', () => {
     fastify = Fastify();
   });
 
-  it('should registe and work correctly', async () => {
+  it("should registe and work correctly", async () => {
     fastify.register(bootstrap, {
       controllers: [MessageController],
     });
 
     await fastify.ready();
     // all
-    let result = await fastify.inject().get('/messages').end();
+    let result = await fastify.inject().get("/messages").end();
     expect(result.statusCode).toBe(200);
     expect(result.json()).toEqual([]);
 
     // create
     result = await fastify
       .inject()
-      .post('/messages')
-      .body({ text: 'first message' })
+      .post("/messages")
+      .body({ text: "first message" })
       .end();
     expect(result.statusCode).toBe(202);
-    expect(result.json()).toHaveProperty('text', 'first message');
+    expect(result.json()).toHaveProperty("text", "first message");
     const firstMessage = result.json();
 
+    // should return 404 bad request
+    result = await fastify
+      .inject()
+      .post("/messages")
+      .body({ content: "fake content" })
+      .end();
+    expect(result.statusCode).toBe(400);
+
     // all
-    result = await fastify.inject().get('/messages').end();
+    result = await fastify.inject().get("/messages").end();
     expect(result.json()).toEqual([firstMessage]);
 
     // get
@@ -101,25 +123,25 @@ describe('end to end', () => {
     // create
     result = await fastify
       .inject()
-      .post('/messages')
-      .body({ text: 'second message' })
+      .post("/messages")
+      .body({ text: "second message" })
       .end();
     expect(result.statusCode).toBe(202);
-    expect(result.json()).toHaveProperty('text', 'second message');
+    expect(result.json()).toHaveProperty("text", "second message");
     let secondMessage = result.json();
 
     // all
-    result = await fastify.inject().get('/messages').end();
+    result = await fastify.inject().get("/messages").end();
     expect(result.json()).toEqual([firstMessage, secondMessage]);
 
     // update
     result = await fastify
       .inject()
       .put(`/messages/${secondMessage.id}`)
-      .body({ text: 'update message' })
+      .body({ text: "update message" })
       .end();
     expect(result.statusCode).toBe(200);
-    expect(result.json()).toHaveProperty('text', 'update message');
+    expect(result.json()).toHaveProperty("text", "update message");
 
     // delete
     result = await fastify
@@ -129,7 +151,7 @@ describe('end to end', () => {
     expect(result.statusCode).toBe(204);
 
     // all
-    result = await fastify.inject().get('/messages').end();
+    result = await fastify.inject().get("/messages").end();
     expect(result.json()).toEqual([firstMessage]);
   });
 });

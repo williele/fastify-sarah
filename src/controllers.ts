@@ -1,8 +1,16 @@
-import { makeDecorator, processDecorators } from "dormice";
-import { DecoratorConfig, Constructable } from "dormice/dist/types";
+import { makeDecorator, processDecorators, registeSubMeta } from "dormice";
+import {
+  DecoratorConfig,
+  Constructable,
+  FactoryConfig,
+} from "dormice/dist/types";
 import { ControllerConfig } from "./types";
-import { CONTROLLER_SUB, CONTROLLER_ROOT } from "./metadatakeys";
-import { RouteOptions } from "fastify";
+import {
+  CONTROLLER_SUB,
+  CONTROLLER_ROOT,
+  CONTROLLER_PARAM,
+} from "./metadatakeys";
+import { RouteOptions, FastifyRequest, FastifyReply } from "fastify";
 import { mergeConfigs } from "./utils/merge-config";
 import { Container } from "inversify";
 
@@ -19,6 +27,38 @@ export function makeControllerDecorator(
 }
 
 /**
+ * make controller paramer decorator
+ * @param config decorator callback
+ * @param resolve resolve how to get parameters
+ */
+export function makeControllerParamDecorator(
+  config: DecoratorConfig<ControllerConfig>["callback"],
+  resolve: (req: FastifyRequest, rep: FastifyReply<any>) => any
+) {
+  return makeDecorator(
+    {
+      on: ["parameter"],
+      callback: (info) => {
+        const { target, key, index } = info;
+        const params =
+          Reflect.getOwnMetadata(CONTROLLER_PARAM, target.constructor, key!) ||
+          [];
+        params[index!] = resolve;
+        Reflect.defineMetadata(
+          CONTROLLER_PARAM,
+          params,
+          target.constructor,
+          key!
+        );
+
+        return config(info);
+      },
+    },
+    { rootMetadata: CONTROLLER_ROOT, subMetadata: CONTROLLER_SUB }
+  );
+}
+
+/**
  * merge a controller data
  * @param data decorator data from controller
  */
@@ -27,7 +67,6 @@ export function mergeControllerData(
   root: ControllerConfig[]
 ): RouteOptions[] {
   const results: RouteOptions[] = [];
-
   Object.values(sub).forEach((configs) => {
     results.push(mergeConfigs([...root, ...configs]) as RouteOptions);
   });
