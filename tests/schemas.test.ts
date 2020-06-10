@@ -1,3 +1,4 @@
+import Ajv from "ajv";
 import { processSchema, parseSchema } from "../src/schemas";
 import {
   ObjectType,
@@ -9,6 +10,7 @@ import {
   Partial,
   BoolProp,
   ObjectProp,
+  NumProp,
 } from "../src/common/schemas";
 
 describe("schemas", () => {
@@ -176,5 +178,22 @@ describe("schemas", () => {
       },
       required: ["confirm"],
     });
+  });
+
+  it("should process data reference", async () => {
+    @ObjectType()
+    class Numbo {
+      @NumProp({ maximum: { $data: "1/max" } })
+      min: number;
+
+      @NumProp({})
+      max: number;
+    }
+
+    const schema = await parseSchema(Numbo);
+    const ajv = new Ajv({ $data: true });
+    const validate = ajv.compile(schema);
+    expect(validate({ min: 4.5, max: 2 })).toBeFalsy();
+    expect(validate({ min: 2, max: 4 })).toBeTruthy();
   });
 });
