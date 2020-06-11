@@ -84,6 +84,7 @@ export async function processController(
   return processDecorators<ControllerConfig, ControllerConfig>(
     target,
     { rootMetadata: CONTROLLER_ROOT, subMetadata: CONTROLLER_SUB },
-    container
+    container,
+    { makeInstance: true }
   );
 }

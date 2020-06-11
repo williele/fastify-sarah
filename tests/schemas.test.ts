@@ -23,6 +23,17 @@ describe("schemas", () => {
   }
 
   it("should process schema correctly", async () => {
+    @ObjectType()
+    class Todo {
+      @StringProp() id: string = String(Math.random());
+      @StringProp() title: string;
+      @BoolProp() completed: boolean = false;
+
+      constructor(title: string) {
+        this.title = title;
+      }
+    }
+
     const configs = await processSchema(Todo);
     expect(configs.result).toEqual({
       type: "object",
@@ -32,6 +43,9 @@ describe("schemas", () => {
         completed: { type: "boolean" },
       },
     });
+    const todo = new Todo("first todo");
+    expect(todo).toHaveProperty("title", "first todo");
+    expect(todo).toHaveProperty("completed", false);
   });
 
   it("should parse schema from type correctly", async () => {
