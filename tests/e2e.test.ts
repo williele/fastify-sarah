@@ -14,9 +14,9 @@ import {
   StringProp,
   Exclude,
   Required,
-  PartialAll,
   Param,
   Res,
+  Partial,
 } from "../src/public-api";
 
 describe("end to end", () => {
@@ -32,7 +32,7 @@ describe("end to end", () => {
   @Exclude("id")
   class MessageInput extends Message {}
   class CreateMessageInput extends MessageInput {}
-  @PartialAll()
+  @Partial()
   class UpdateMessageInput extends MessageInput {}
 
   @Controller("messages")

@@ -37,7 +37,6 @@
     "dormice": "^0.0.1-alpha.1",
     "fastify": "^2.14.1",
     "fastify-plugin": "^1.6.1",
-    "inversify": "^5.0.1",
     "reflect-metadata": "^0.1.13"
   }
 }

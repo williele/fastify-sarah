@@ -5,11 +5,7 @@ import {
   FastifyReply,
 } from "fastify";
 import { ServerResponse } from "http";
-import {
-  makeControllerDecorator,
-  mergeControllerData,
-  makeControllerParamDecorator,
-} from "../controllers";
+import { makeControllerDecorator, mergeControllerData } from "../controllers";
 import { RootInstance, SubData, PreviousData, ParentContainer } from "dormice";
 import { Fastify } from "../tokens";
 import { ControllerConfig, TypeAll } from "../types";

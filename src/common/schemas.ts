@@ -1,4 +1,4 @@
-import { makeSchemaDecorator, mergeSchemaData } from "../schemas";
+import { makeSchemaDecorator, mergeSchemaData, parseSchema } from "../schemas";
 import { PreviousData, Result, SubResult } from "dormice";
 import { JSONSchema } from "fastify";
 import {
@@ -65,12 +65,15 @@ export function ObjectProp(type: () => any) {
 /**
  * property decorator, use on property
  */
-export function Prop(opts: TypeAll) {
+export function Prop(customType?: any, opts?: TypeAll) {
   return makeSchemaDecorator({
     on: ["property"],
-    callback: () => ({
+    callback: ({ type }) => ({
       deps: () => [Result],
-      factory: (result) => ({ ...result, ...opts }),
+      factory: async (result) => ({
+        ...(await parseSchema(type, customType, opts)),
+        ...result,
+      }),
     }),
   });
 }
@@ -130,12 +133,9 @@ export function Exclude(...keys: string[]) {
     callback: () => ({
       deps: () => [Result],
       factory: (result) => {
-        if (result === undefined || result.properties === undefined) {
-          return result;
-        }
+        if (result === undefined || result.properties === undefined) return {};
 
         const required = new Set(result.required);
-
         keys.forEach((key) => {
           delete result.properties[key];
           // remove from required list
@@ -151,44 +151,47 @@ export function Exclude(...keys: string[]) {
 
 /**
  * schema decorator use on object type
+ * if input fields is empty then required all
  * @param keys list of object fields required
  */
 export function Required(...keys: string[]) {
   return makeSchemaDecorator({
     on: ["class"],
     callback: () => ({
-      deps: () => [Result],
-      factory: (result) => ({ ...result, required: Array.from(new Set(keys)) }),
+      deps: () => [Result, SubResult],
+      factory: (result, properties) => ({
+        ...result,
+        required:
+          keys.length > 0 ? Array.from(new Set(keys)) : Object.keys(properties),
+      }),
     }),
   });
 }
 
+/**
+ * schema decorator use on object type
+ * if input fields is empty then make all properties optional
+ * @param keys list of object fields make optional
+ */
 export function Partial(...keys: string[]) {
   return makeSchemaDecorator({
     on: ["class"],
     callback: () => ({
       deps: () => [Result],
       factory: (result) => {
-        if (result === undefined && result.required === undefined)
-          return result;
+        if (result === undefined || result.required === undefined) return {};
 
-        const required = new Set(result.required);
-        keys.forEach((key) => {
-          required.delete(key);
-        });
-        result.required = required;
+        if (keys.length === 0) {
+          result.required = [];
+        } else {
+          const required = new Set(result.required);
+          keys.forEach((key) => {
+            required.delete(key);
+          });
+          result.required = Array.from(required);
+        }
         return result;
       },
-    }),
-  });
-}
-
-export function PartialAll() {
-  return makeSchemaDecorator({
-    on: ["class"],
-    callback: () => ({
-      deps: () => [Result],
-      factory: (result) => ({ ...result, required: [] }),
     }),
   });
 }

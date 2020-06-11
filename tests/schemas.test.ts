@@ -6,11 +6,12 @@ import {
   StringProp,
   ArrayProp,
   Required,
-  PartialAll,
   Partial,
   BoolProp,
   ObjectProp,
   NumProp,
+  Prop,
+  IntProp,
 } from "../src/common/schemas";
 
 describe("schemas", () => {
@@ -20,6 +21,18 @@ describe("schemas", () => {
     @StringProp() title: string;
     @BoolProp() completed: boolean;
   }
+
+  it("should process schema correctly", async () => {
+    const configs = await processSchema(Todo);
+    expect(configs.result).toEqual({
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        title: { type: "string" },
+        completed: { type: "boolean" },
+      },
+    });
+  });
 
   it("should parse schema from type correctly", async () => {
     let result = await parseSchema(String, String, { minLength: 2 });
@@ -52,19 +65,88 @@ describe("schemas", () => {
     });
   });
 
-  it("should process schema correctly", async () => {
-    const configs = await processSchema(Todo);
-    expect(configs.result).toEqual({
+  it("should make schema required correctly", async () => {
+    @ObjectType()
+    @Required()
+    class Foo {
+      @StringProp() text: string;
+    }
+
+    let result = await processSchema(Foo);
+    expect(result.result).toEqual({
+      type: "object",
+      properties: {
+        text: { type: "string" },
+      },
+      required: ["text"],
+    });
+
+    @ObjectType()
+    @Required("id")
+    class Bar {
+      @StringProp() id: string;
+      @StringProp() text: string;
+    }
+
+    result = await processSchema(Bar);
+    expect(result.result).toEqual({
       type: "object",
       properties: {
         id: { type: "string" },
-        title: { type: "string" },
+        text: { type: "string" },
+      },
+      required: ["id"],
+    });
+  });
+
+  it("should make schema partial correctly", async () => {
+    @Partial("completed")
+    @Required()
+    @ObjectType()
+    class Foo {
+      @StringProp() id: string;
+      @StringProp() text: string;
+      @BoolProp() completed: boolean;
+    }
+    let result = await processSchema(Foo);
+    expect(result.result).toEqual({
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        text: { type: "string" },
         completed: { type: "boolean" },
+      },
+      required: ["id", "text"],
+    });
+
+    @Partial()
+    class Bar extends Foo {}
+    result = await processSchema(Bar);
+    expect(result.result).toEqual({
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        text: { type: "string" },
+        completed: { type: "boolean" },
+      },
+      required: [],
+    });
+
+    @ObjectType()
+    @Partial()
+    class Baz {
+      @StringProp() id: string;
+    }
+    result = await processSchema(Baz);
+    expect(result.result).toEqual({
+      type: "object",
+      properties: {
+        id: { type: "string" },
       },
     });
   });
 
-  it("should exclude correctly", async () => {
+  it("should make schema exclude correctly", async () => {
     @Exclude("id", "completed")
     class CreateTodoDto extends Todo {}
 
@@ -85,6 +167,16 @@ describe("schemas", () => {
       properties: {
         completed: { type: "boolean" },
       },
+    });
+
+    @ObjectType()
+    @Exclude("id")
+    class Empty {}
+
+    configs = await processSchema(Empty);
+    expect(configs.result).toEqual({
+      type: "object",
+      properties: {},
     });
   });
 
@@ -116,7 +208,7 @@ describe("schemas", () => {
     }
 
     @Required("confirm")
-    @PartialAll()
+    @Partial()
     class UpdateTodoDto extends CreateProductDto {
       @StringProp({ minLength: 1 })
       confirm: string;
@@ -195,5 +287,28 @@ describe("schemas", () => {
     const validate = ajv.compile(schema);
     expect(validate({ min: 4.5, max: 2 })).toBeFalsy();
     expect(validate({ min: 2, max: 4 })).toBeTruthy();
+  });
+
+  it("should make custom schema with Prop decorator", async () => {
+    @ObjectType()
+    class Foo {
+      @Prop() id: string;
+      @IntProp() quantity: number;
+      @Prop() point: number;
+      @Prop() published: boolean;
+      @Prop(String) users: string[];
+    }
+
+    let configs = await processSchema(Foo);
+    expect(configs.result).toEqual({
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        quantity: { type: "integer" },
+        point: { type: "number" },
+        published: { type: "boolean" },
+        users: { type: "array", items: { type: "string" } },
+      },
+    });
   });
 });
