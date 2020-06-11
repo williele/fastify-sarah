@@ -16,6 +16,10 @@ import { ControllerConfig, TypeAll } from "../types";
 import { parseSchema } from "../schemas";
 import { CONTROLLER_PARAM } from "../metadatakeys";
 
+/**
+ * controller decorator, use on a class
+ * @param url route url
+ */
 export function Controller(url: string = "") {
   return makeControllerDecorator({
     on: ["class"],
@@ -80,98 +84,35 @@ export const Put = (url: string = "") => Route("PUT", url);
 export const Patch = (url: string = "") => Route("PATCH", url);
 export const Delete = (url: string = "") => Route("DELETE", url);
 
-// parameter decorators
 /**
- * parameter decorator, define route body
- * @param type
- * @param schema
+ * custom response type schema
+ * @param statusCode http status code
+ * @param type addition define type, this required if response type is array
+ * @param schema addition schema
  */
-export function Body(type?, schema?: TypeAll) {
-  return makeControllerParamDecorator(
-    ({ paramType }) => ({
+export function Res(
+  statusCode: string | number = "2xx",
+  type?: any,
+  schema?: TypeAll
+) {
+  return makeControllerDecorator({
+    on: ["method"],
+    callback: ({ returnType }) => ({
       deps: () => [ParentContainer],
       factory: async (container) => {
-        const configs = await parseSchema(type, paramType, schema, container);
-        return { schema: { body: configs } };
-      },
-    }),
-    (req) => req.body
-  );
-}
+        // if return type and custom type both undefine
+        if (returnType === undefined && type === undefined) return {};
+        const responseSchema = await parseSchema(
+          returnType,
+          type,
+          schema,
+          container
+        );
 
-/**
- * parameter decorator, define route single param
- * @param name
- * @param type
- * @param schema
- */
-export function Param(name: string, type?, schema?: TypeAll) {
-  return makeControllerParamDecorator(
-    ({ paramType }) => ({
-      deps: () => [ParentContainer],
-      factory: async (container) => {
-        const configs = await parseSchema(type, paramType, schema, container);
-        return {
-          schema: {
-            params: {
-              type: "object",
-              properties: { [name]: configs },
-              required: [name],
-            },
-          },
-        };
+        return { schema: { response: { [statusCode]: responseSchema } } };
       },
     }),
-    (req) => req.params[name]
-  );
-}
-
-/**
- * parameter decorator, define route multiple param
- * @param name
- * @param type
- * @param schema
- */
-export function Params(type?, schema?: TypeAll) {
-  return makeControllerParamDecorator(
-    ({ paramType }) => ({
-      deps: () => [ParentContainer],
-      factory: async (container) => {
-        const configs = await parseSchema(type, paramType, schema, container);
-        return {
-          schema: {
-            params: { ...configs, required: Object.keys(configs.properties) },
-          },
-        };
-      },
-    }),
-    (req) => req.params
-  );
-}
-
-/**
- * parameter decorator, define route query param
- * @param type
- * @param schema
- */
-export function Query(type?, schema?: TypeAll) {
-  return makeControllerParamDecorator(
-    ({ paramType }) => ({
-      deps: () => [ParentContainer],
-      factory: async (container) => {
-        const configs = await parseSchema(type, paramType, schema, container);
-        return {
-          schema: {
-            querystring: {
-              ...configs,
-              required: Object.keys(configs.properties),
-            },
-          },
-        };
-      },
-    }),
-    (req) => req.query
-  );
+  });
 }
 
 /**

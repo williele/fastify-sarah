@@ -16,6 +16,7 @@ import {
   Required,
   PartialAll,
   Param,
+  Res,
 } from "../src/public-api";
 
 describe("end to end", () => {
@@ -39,19 +40,16 @@ describe("end to end", () => {
   class MessageController {
     messages: { [key: string]: Message } = {};
 
-    @Get()
-    all() {
+    @Get() @Res(200, Message) all(): Message[] {
       return Object.values(this.messages);
     }
 
-    @Get(":id")
-    get(@Param("id") id: string) {
+    @Get(":id") @Res() get(@Param("id") id: string): Message {
       if (this.messages[id]) return this.messages[id];
       else throw new NotFound("message not found");
     }
 
-    @Post()
-    create(@Body() input: CreateMessageInput) {
+    @Post() @Res() create(@Body() input: CreateMessageInput): Message {
       const id = randomBytes(5).toString("hex");
       const message: Message = { ...input, id };
 
@@ -59,8 +57,10 @@ describe("end to end", () => {
       return message;
     }
 
-    @Put(":id")
-    update(@Param("id") id: string, @Body() input: UpdateMessageInput) {
+    @Put(":id") @Res() update(
+      @Param("id") id: string,
+      @Body() input: UpdateMessageInput
+    ): Message {
       const message = this.get(id);
       const { text } = input;
 
@@ -68,8 +68,7 @@ describe("end to end", () => {
       return message;
     }
 
-    @Delete(":id")
-    delete(@Param("id") id: string) {
+    @Delete(":id") @Res() delete(@Param("id") id: string) {
       const message = this.get(id);
       delete this.messages[message.id];
       return;
