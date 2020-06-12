@@ -1,9 +1,5 @@
-import { makeDecorator, processDecorators, registeSubMeta } from "dormice";
-import {
-  DecoratorConfig,
-  Constructable,
-  FactoryConfig,
-} from "dormice/dist/types";
+import { makeDecorator, processDecorators } from "dormice";
+import { DecoratorConfig, Constructable } from "dormice/dist/types";
 import { ControllerConfig } from "./types";
 import {
   CONTROLLER_SUB,
@@ -32,8 +28,8 @@ export function makeControllerDecorator(
  * @param resolve resolve how to get parameters
  */
 export function makeControllerParamDecorator(
-  config: DecoratorConfig<ControllerConfig>["callback"],
-  resolve: (req: FastifyRequest, rep: FastifyReply<any>) => any
+  resolve: (req: FastifyRequest, rep: FastifyReply<any>) => any,
+  config: DecoratorConfig<ControllerConfig>["callback"] = () => () => ({})
 ) {
   return makeDecorator(
     {

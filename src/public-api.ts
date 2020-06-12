@@ -1,5 +1,8 @@
 export { bootstrap } from "./bootstrap";
-export { makeControllerDecorator } from "./controllers";
+export {
+  makeControllerDecorator,
+  makeControllerParamDecorator,
+} from "./controllers";
 export { makeSchemaDecorator } from "./schemas";
 export * from "./types";
 export * from "./tokens";
