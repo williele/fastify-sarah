@@ -52,15 +52,6 @@ export async function parseSchema(
     };
   }
 
-  // if (type === Array && secondaryType !== undefined) {
-  //   // array type
-  //   return {
-  //     type: "array",
-  //     items: await parseSchema(secondaryType),
-  //     ...schema,
-  //   };
-  // }
-
   switch (actualType) {
     case String:
       return { type: "string", ...schema };
