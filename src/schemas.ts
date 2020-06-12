@@ -42,16 +42,26 @@ export async function parseSchema(
   schema?: TypeAll,
   container?: Container
 ) {
-  if (type === Array) {
-    // array type
+  const actualType = type || secondaryType;
+  if (Array.isArray(actualType)) {
+    const items = await Promise.all(actualType.map((t) => parseSchema(t)));
     return {
       type: "array",
-      items: await parseSchema(secondaryType),
+      items: items.length === 1 ? items[0] : items,
       ...schema,
     };
   }
 
-  switch (secondaryType || type) {
+  // if (type === Array && secondaryType !== undefined) {
+  //   // array type
+  //   return {
+  //     type: "array",
+  //     items: await parseSchema(secondaryType),
+  //     ...schema,
+  //   };
+  // }
+
+  switch (actualType) {
     case String:
       return { type: "string", ...schema };
     case Number:
@@ -59,7 +69,7 @@ export async function parseSchema(
     case Boolean:
       return { type: "boolean", ...schema };
     default:
-      const obj = await processSchema(secondaryType || type, container);
+      const obj = await processSchema(actualType, container);
       if (obj) return { ...(obj.result as object), ...schema };
       else return schema;
   }

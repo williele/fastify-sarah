@@ -34,8 +34,8 @@ describe("schemas", () => {
       }
     }
 
-    const configs = await processSchema(Todo);
-    expect(configs.result).toEqual({
+    let result = await processSchema(Todo);
+    expect(result.result).toEqual({
       type: "object",
       properties: {
         id: { type: "string" },
@@ -52,8 +52,8 @@ describe("schemas", () => {
     let result = await parseSchema(String, String, { minLength: 2 });
     expect(result).toEqual({ type: "string", minLength: 2 });
 
-    result = await parseSchema(Array, String);
-    expect(result).toEqual({ type: "array", items: { type: "string" } });
+    result = await parseSchema(String);
+    expect(result).toEqual({ type: "string" });
 
     result = await parseSchema(Todo, Todo);
     expect(result).toEqual({
@@ -65,7 +65,7 @@ describe("schemas", () => {
       },
     });
 
-    result = await parseSchema(Array, Todo);
+    result = await parseSchema([Todo]);
     expect(result).toEqual({
       type: "array",
       items: {
@@ -76,6 +76,26 @@ describe("schemas", () => {
           completed: { type: "boolean" },
         },
       },
+    });
+
+    result = await parseSchema([String], Array);
+    expect(result).toEqual({
+      type: "array",
+      items: { type: "string" },
+    });
+  });
+
+  it("should parse array schema correctly", async () => {
+    let result = await parseSchema([String]);
+    expect(result).toEqual({
+      type: "array",
+      items: { type: "string" },
+    });
+
+    result = await parseSchema([String, Number]);
+    expect(result).toEqual({
+      type: "array",
+      items: [{ type: "string" }, { type: "number" }],
     });
   });
 
@@ -310,7 +330,7 @@ describe("schemas", () => {
       @IntProp() quantity: number;
       @Prop() point: number;
       @Prop() published: boolean;
-      @Prop(String) users: string[];
+      @Prop([String]) users: string[];
     }
 
     let configs = await processSchema(Foo);

@@ -40,7 +40,7 @@ describe("end to end", () => {
   class MessageController {
     messages: { [key: string]: Message } = {};
 
-    @Get() @Res(200, Message) all(): Message[] {
+    @Get() @Res([Message]) all(): Message[] {
       return Object.values(this.messages);
     }
 

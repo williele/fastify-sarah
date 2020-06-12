@@ -36,9 +36,7 @@ describe("controllers", () => {
 
     @Controller()
     class TestController {
-      @Get()
-      @Res(200, Message)
-      all(): Message[] {
+      @Get() @Res([Message], 200) all(): Message[] {
         return [{ text: "hello world" }];
       }
     }

@@ -87,8 +87,8 @@ export const Delete = (url: string = "") => Route("DELETE", url);
  * @param schema addition schema
  */
 export function Res(
-  statusCode: string | number = "2xx",
   type?: any,
+  statusCode: string | number = "2xx",
   schema?: TypeAll
 ) {
   return makeControllerDecorator({
@@ -99,8 +99,8 @@ export function Res(
         // if return type and custom type both undefine
         if (returnType === undefined && type === undefined) return {};
         const responseSchema = await parseSchema(
-          returnType,
           type,
+          returnType,
           schema,
           container
         );

@@ -71,7 +71,7 @@ export function Prop(customType?: any, opts?: TypeAll) {
     callback: ({ type }) => ({
       deps: () => [Result],
       factory: async (result) => ({
-        ...(await parseSchema(type, customType, opts)),
+        ...(await parseSchema(customType, type, opts)),
         ...result,
       }),
     }),
