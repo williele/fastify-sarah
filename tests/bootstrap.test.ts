@@ -1,6 +1,13 @@
 import Fastify, { FastifyInstance } from "fastify";
 import { processBootstrap, bootstrap } from "../src/bootstrap";
-import { Controller, Route, ObjectType, Body } from "../src/common/public-api";
+import {
+  Controller,
+  Route,
+  ObjectType,
+  Body,
+  Injectable,
+} from "../src/common/public-api";
+import { makeControllerDecorator } from "../src/public-api";
 
 describe("bootstrap", () => {
   let fastify: FastifyInstance;
@@ -34,6 +41,56 @@ describe("bootstrap", () => {
     await fastify.ready();
     const res = await fastify.inject().get("/api/test").end();
     expect(res.statusCode).toBe(200);
+  });
+
+  it("should shared services", async () => {
+    @Injectable()
+    class Service {
+      constructor() {}
+    }
+
+    let serviceA: Service;
+    let serviceB: Service;
+    let serviceMethod: Service;
+
+    const Decorator = makeControllerDecorator({
+      on: ["class", "method"],
+      callback: () => ({
+        deps: () => [Service],
+        factory: (service: Service) => {
+          serviceMethod = service;
+          return {};
+        },
+      }),
+    });
+
+    @Controller("a")
+    @Decorator
+    class AController {
+      constructor(public service: Service) {
+        serviceA = service;
+      }
+    }
+
+    @Controller("b")
+    class BController {
+      constructor(public service: Service) {
+        serviceB = service;
+      }
+
+      @Route("GET")
+      @Decorator
+      method() {}
+    }
+
+    fastify.register(bootstrap, {
+      controllers: [AController, BController],
+      providers: [Service],
+    });
+
+    await fastify.ready();
+    expect(serviceA!).toBe(serviceB!);
+    expect(serviceB!).toBe(serviceMethod!);
   });
 
   it("should add schemas", async () => {
