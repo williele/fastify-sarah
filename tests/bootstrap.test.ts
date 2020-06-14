@@ -1,6 +1,6 @@
 import Fastify, { FastifyInstance } from "fastify";
 import { processBootstrap, bootstrap } from "../src/bootstrap";
-import { Controller, Route } from "../src/common/public-api";
+import { Controller, Route, ObjectType, Body } from "../src/common/public-api";
 
 describe("bootstrap", () => {
   let fastify: FastifyInstance;
@@ -34,6 +34,49 @@ describe("bootstrap", () => {
     await fastify.ready();
     const res = await fastify.inject().get("/api/test").end();
     expect(res.statusCode).toBe(200);
+  });
+
+  it("should add schemas", async () => {
+    @ObjectType()
+    class Foo {}
+
+    @ObjectType()
+    class Bar {}
+
+    @Controller()
+    class TestController {
+      @Route("POST") create(@Body() bar: Bar) {
+        return bar;
+      }
+    }
+
+    fastify.register(bootstrap, {
+      controllers: [TestController],
+      schemas: [Foo],
+    });
+
+    await fastify.ready();
+    expect(fastify.getSchemas()).toHaveProperty("Foo");
+    expect(fastify.getSchemas()).toHaveProperty("Bar");
+  });
+
+  it("should not add schemas", async () => {
+    @ObjectType()
+    class Bar {}
+
+    @Controller()
+    class TestController {
+      @Route("POST") create(@Body() bar: Bar) {
+        return bar;
+      }
+    }
+
+    fastify.register(bootstrap, {
+      controllers: [TestController],
+      addSchema: false,
+    });
+    await fastify.ready();
+    expect(fastify.getSchemas()).not.toHaveProperty("Bar");
   });
 
   it("should bootstrap correctly", async () => {

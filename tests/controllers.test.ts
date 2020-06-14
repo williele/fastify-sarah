@@ -10,7 +10,7 @@ import {
 } from "../src/public-api";
 import { processController } from "../src/controllers";
 import { Container, createContainer } from "dormice";
-import { Fastify as FastifyInst } from "../src/tokens";
+import { Fastify as FastifyInst, BootstrapConfig } from "../src/tokens";
 
 describe("controllers", () => {
   let fastify: FastifyInstance;
@@ -21,6 +21,7 @@ describe("controllers", () => {
 
     container = await createContainer([
       { token: FastifyInst, useValue: fastify },
+      { token: BootstrapConfig, useValue: {} },
     ]);
   });
 

@@ -1,5 +1,6 @@
+import fastify from "fastify";
 import Ajv from "ajv";
-import { processSchema, parseSchema } from "../src/schemas";
+import { processSchema, parseSchema, addSchema } from "../src/schemas";
 import {
   ObjectType,
   Exclude,
@@ -13,6 +14,7 @@ import {
   Prop,
   IntProp,
 } from "../src/common/schemas";
+import { Fastify } from "../src/tokens";
 
 describe("schemas", () => {
   @ObjectType()
@@ -371,5 +373,19 @@ describe("schemas", () => {
         users: { type: "array", items: { type: "string" } },
       },
     });
+  });
+
+  it("should add schema to fastify instance", async () => {
+    @ObjectType()
+    class Numbo {
+      @NumProp() min: number;
+    }
+    const schema = await processSchema(Numbo);
+
+    const inst = fastify();
+    addSchema(inst, schema.result);
+    addSchema(inst, schema.result);
+
+    expect(inst.getSchemas()).toHaveProperty("Numbo");
   });
 });

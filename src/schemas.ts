@@ -8,10 +8,10 @@ import {
   ParentContainer,
 } from "dormice";
 import { SCHEMA_ROOT, SCHEMA_SUB } from "./metadatakeys";
-import { JSONSchema } from "fastify";
+import { JSONSchema, FastifyInstance, RouteOptions } from "fastify";
 import { combineObjects } from "./utils/merge-config";
 import { ProcessSchema } from "./tokens";
-import { TypeAll } from "./types";
+import { TypeAll, BootstrapOptions } from "./types";
 
 /**
  * make custom schema decorator
@@ -94,4 +94,50 @@ export async function processSchema(
     { rootMetadata: SCHEMA_ROOT, subMetadata: SCHEMA_SUB },
     processContainer
   );
+}
+
+/**
+ * add a schema if not yet added to fastify instance
+ * @param inst fastify instance
+ * @param schema schema
+ */
+export function addSchema(inst: FastifyInstance, schema: any) {
+  if (schema.$id === undefined) return;
+
+  const schemas = inst.getSchemas();
+  if (schemas[schema.$id] !== undefined) return;
+  inst.addSchema(schema);
+}
+
+/**
+ * add schema body, params, querystring, reponse and headers into fastify shared schemas
+ * @param inst fastify instance
+ * @param routeOpts route options
+ */
+export function addSchemaFromRoute(
+  inst: FastifyInstance,
+  routeOpts: Partial<RouteOptions>
+) {
+  const schema = routeOpts.schema;
+  if (!schema) return;
+
+  const { body, querystring, params, response, headers } = schema;
+  // body
+  if (body && (body as any).$id) addSchema(inst, body);
+  // query
+  if (querystring && (querystring as any).$id) addSchema(inst, querystring);
+  // params
+  if (params && (params as any).$id) addSchema(inst, params);
+  // reponse
+  if (response) {
+    Object.values(response).forEach((schema) => {
+      if (schema && (schema as any).$id) addSchema(inst, schema);
+    });
+  }
+  // headers
+  if (headers) {
+    Object.values(headers).forEach((schema) => {
+      if (schema && (schema as any).$id) addSchema(inst, schema);
+    });
+  }
 }

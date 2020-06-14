@@ -4,10 +4,15 @@ import { BootstrapOptions } from "./types";
 import { Fastify, BootstrapConfig } from "./tokens";
 import { FastifyInstance } from "fastify";
 import { processController } from "./controllers";
+import { processSchema, addSchema } from "./schemas";
+
+const bootstrapDefaultOptions: Partial<BootstrapOptions> = {
+  addSchema: true,
+};
 
 export const bootstrap = fp(async (inst, opts: BootstrapOptions, done) => {
   try {
-    await processBootstrap(inst, opts);
+    await processBootstrap(inst, { ...bootstrapDefaultOptions, ...opts });
     done();
   } catch (error) {
     done(error);
@@ -25,8 +30,16 @@ export const processBootstrap = async (
     ...(opts.providers || []),
   ]);
 
+  // solving schemas
+  const schemas = opts.schemas || [];
+  schemas.forEach(async (schema) => {
+    const { result } = await processSchema(schema, container);
+    addSchema(inst, result, opts);
+  });
+
   // processing controllers
-  const controllerPromise = opts.controllers.map((ctrl) => {
+  const controllers = opts.controllers || [];
+  const controllerPromise = controllers.map((ctrl) => {
     return processController(ctrl, container);
   });
   await Promise.all(controllerPromise);

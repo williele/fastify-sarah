@@ -9,7 +9,7 @@ import { makeControllerDecorator, mergeControllerData } from "../controllers";
 import { RootInstance, SubData, PreviousData, ParentContainer } from "dormice";
 import { Fastify, BootstrapConfig } from "../tokens";
 import { ControllerConfig, TypeAll, BootstrapOptions } from "../types";
-import { parseSchema } from "../schemas";
+import { parseSchema, addSchemaFromRoute } from "../schemas";
 import { CONTROLLER_PARAM } from "../metadatakeys";
 
 /**
@@ -32,6 +32,11 @@ export function Controller(url: string = "") {
 
         const routes = mergeControllerData(sub, [bootConfig, { url }, ...root]);
         routes.forEach((route) => {
+          // adding schema
+          if (bootOpts.addSchema) {
+            addSchemaFromRoute(fastify, route);
+          }
+
           // apply route
           fastify.route(route);
         });

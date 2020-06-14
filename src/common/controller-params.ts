@@ -34,15 +34,13 @@ export function Param(name: string, type?, schema?: TypeAll) {
       deps: () => [ParentContainer],
       factory: async (container) => {
         const configs = await parseSchema(type, paramType, schema, container);
-        return {
-          schema: {
-            params: {
-              type: "object",
-              properties: { [name]: configs },
-              required: [name],
-            },
-          },
+        const params = {
+          type: "object",
+          properties: { [name]: configs },
+          required: [name],
         };
+
+        return { schema: { params } };
       },
     })
   );
@@ -50,7 +48,6 @@ export function Param(name: string, type?, schema?: TypeAll) {
 
 /**
  * parameter decorator, define route multiple param
- * @param name
  * @param type
  * @param schema
  */
@@ -61,11 +58,12 @@ export function Params(type?, schema?: TypeAll) {
       deps: () => [ParentContainer],
       factory: async (container) => {
         const configs = await parseSchema(type, paramType, schema, container);
-        return {
-          schema: {
-            params: { ...configs, required: Object.keys(configs.properties) },
-          },
+        const params = {
+          ...configs,
+          required: Object.keys(configs.properties),
         };
+
+        return { schema: { params } };
       },
     })
   );
@@ -83,9 +81,7 @@ export function Query(type?, schema?: TypeAll) {
       deps: () => [ParentContainer],
       factory: async (container) => {
         const configs = await parseSchema(type, paramType, schema, container);
-        return {
-          schema: { querystring: configs },
-        };
+        return { schema: { querystring: configs } };
       },
     })
   );
@@ -94,9 +90,49 @@ export function Query(type?, schema?: TypeAll) {
 /**
  * parameter decorator, get request header by name
  * @param name header name
+ * @param type
+ * @param schema
  */
-export function Header(name: string) {
-  return makeControllerParamDecorator((req) => req.headers[name]);
+export function Header(name: string, type?, schema?: TypeAll) {
+  return makeControllerParamDecorator(
+    (req) => req.headers[name],
+    ({ paramType }) => ({
+      deps: () => [ParentContainer],
+      factory: async (container) => {
+        const configs = await parseSchema(type, paramType, schema, container);
+        const headers = {
+          type: "object",
+          properties: { [name]: configs },
+          required: [name],
+        };
+
+        return { schema: { headers } };
+      },
+    })
+  );
+}
+
+/**
+ * parameter decorator, define route multiple headers
+ * @param type
+ * @param schema
+ */
+export function Headers(type?, schema?: TypeAll) {
+  return makeControllerParamDecorator(
+    (req) => req.headers,
+    ({ paramType }) => ({
+      deps: () => [ParentContainer],
+      factory: async (container) => {
+        const configs = await parseSchema(type, paramType, schema, container);
+        const headers = {
+          ...configs,
+          required: Object.keys(configs.properties),
+        };
+
+        return { schema: { headers } };
+      },
+    })
+  );
 }
 
 /**

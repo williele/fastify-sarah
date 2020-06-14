@@ -14,9 +14,11 @@ declare module "fastify" {
 export type ControllerConfig = Partial<RouteOptions>;
 
 export interface BootstrapOptions {
-  controllers: Constructable[]; // controllers
+  controllers?: Constructable[]; // controllers
+  schemas?: Constructable[]; // list of object type schema
   providers?: Providers;
   prefix?: string; // prefix all route url
+  addSchema?: boolean; // wether add schema to fastify instance. default: true
 }
 
 export interface DataReference {
