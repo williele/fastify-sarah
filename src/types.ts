@@ -1,6 +1,16 @@
 import { RouteOptions, JSONSchema } from "fastify";
-import { Providers, Constructable } from "dormice";
+import { Providers, Constructable, ProviderToken } from "dormice";
 
+// fastify instance
+declare module "fastify" {
+  interface FastifyInstance {
+    sarah: {
+      get<T = any>(token: ProviderToken): T;
+    };
+  }
+}
+
+// controller
 export type ControllerConfig = Partial<RouteOptions>;
 
 export interface BootstrapOptions {
