@@ -199,3 +199,34 @@ export function Partial(...keys: string[]) {
     }),
   });
 }
+
+/**
+ * select a specific properties inside and object type
+ * @param keys list of object fields to pick up
+ */
+export function Pick(...keys: string[]) {
+  return makeSchemaDecorator({
+    on: ["class"],
+    callback: () => ({
+      deps: () => [Result],
+      factory: (result) => {
+        if (result === undefined || result.properties === undefined) return {};
+        const oldProperties = result.properties;
+        const oldRequired = result.required || [];
+        const required = new Set();
+
+        result.properties = {};
+
+        keys.forEach((key) => {
+          if (oldProperties[key] !== undefined) {
+            result.properties[key] = oldProperties[key];
+          }
+          if (oldRequired.includes(key)) required.add(key);
+        });
+
+        result.required = Array.from(required);
+        return result;
+      },
+    }),
+  });
+}

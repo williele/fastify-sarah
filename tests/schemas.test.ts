@@ -13,8 +13,8 @@ import {
   NumProp,
   Prop,
   IntProp,
+  Pick,
 } from "../src/common/schemas";
-import { Fastify } from "../src/tokens";
 
 describe("schemas", () => {
   @ObjectType()
@@ -234,6 +234,29 @@ describe("schemas", () => {
       $id: "Empty",
       type: "object",
       properties: {},
+    });
+  });
+
+  it("should make schema pick correctly", async () => {
+    @ObjectType()
+    @Required()
+    class Todo {
+      @StringProp() id: string;
+      @StringProp() title: string;
+      @BoolProp() completed: boolean;
+    }
+
+    @Pick("title")
+    class CreateTodoDto extends Todo {}
+
+    const { result } = await processSchema(CreateTodoDto);
+    expect(result).toEqual({
+      $id: "CreateTodoDto",
+      type: "object",
+      properties: {
+        title: { type: "string" },
+      },
+      required: ["title"],
     });
   });
 
