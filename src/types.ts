@@ -13,11 +13,18 @@ export interface DataReference {
   $data: string;
 }
 
+// main type
 export interface TypeOptions {
   type?: string;
+  title?: string;
+  description?: string;
+  $comment?: string;
+  enum?: any[];
+  const?: any | DataReference;
   [key: string]: any;
 }
 
+// object type
 export type ObjectTypeOptions = Omit<TypeOptions, "type"> & {
   minProperties?: number;
   maxProperties?: number;
@@ -26,14 +33,27 @@ export type ObjectTypeOptions = Omit<TypeOptions, "type"> & {
   patternProperties?: JSONSchema;
   additionalProperties?: boolean | JSONSchema;
   dependencies?: JSONSchema;
+
+  examples?: object;
 };
 
+// array type
 export type ArrayTypeOptions = Omit<TypeOptions, "type"> & {
   minItems?: number | DataReference;
   maxItems?: number | DataReference;
   uniqueItems?: boolean | DataReference;
+
+  examples?: any[];
 };
 
+// string type
+type StringTransform =
+  | "trim"
+  | "trimLeft"
+  | "trimRight"
+  | "toLowerCase"
+  | "toUpperCase"
+  | "toEnumCase";
 export type StringTypeOptions = Omit<TypeOptions, "type"> & {
   minLength?: number | DataReference;
   maxLength?: number | DataReference;
@@ -43,20 +63,34 @@ export type StringTypeOptions = Omit<TypeOptions, "type"> & {
   formatMinimum?: string | DataReference;
   formatExclusiveMaximum?: boolean | DataReference;
   formatExclusiveMinimum?: boolean | DataReference;
+
+  regexp?: string;
+  transform?: StringTransform | StringTransform[];
+
   default?: string | DataReference;
+  examples?: string;
 };
 
+// number type
 export type NumTypeOptions = Omit<TypeOptions, "type"> & {
   maximum?: number | DataReference;
   minimum?: number | DataReference;
   exclusiveMaximum?: boolean | DataReference;
   exclusiveMinimum?: boolean | DataReference;
   multipleOf?: number | DataReference;
+
+  range?: [number | DataReference, number | DataReference];
+  exclusiveRange?: boolean | DataReference;
+
   default?: number | DataReference;
+  examples?: number;
 };
 
+// boolean
 export type BoolTypeOptions = Omit<TypeOptions, "type"> & {
   default?: boolean | DataReference;
+
+  examples?: boolean;
 };
 
 export type TypeAll = TypeOptions &
