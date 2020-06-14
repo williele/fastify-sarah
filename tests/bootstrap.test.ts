@@ -7,8 +7,7 @@ describe("bootstrap", () => {
 
   @Controller("test")
   class TestController {
-    @Route("POST")
-    create() {}
+    @Route("GET") get() {}
   }
 
   beforeEach(() => {
@@ -24,6 +23,17 @@ describe("bootstrap", () => {
     await fastify.ready();
     const foo = fastify.sarah.get<string>("foo");
     expect(foo).toBe("foo");
+  });
+
+  it("should prefix the whole url", async () => {
+    fastify.register(bootstrap, {
+      controllers: [TestController],
+      prefix: "api",
+    });
+
+    await fastify.ready();
+    const res = await fastify.inject().get("/api/test").end();
+    expect(res.statusCode).toBe(200);
   });
 
   it("should bootstrap correctly", async () => {

@@ -1,7 +1,7 @@
 import fp from "fastify-plugin";
 import { createContainer, ProviderToken } from "dormice";
 import { BootstrapOptions } from "./types";
-import { Fastify } from "./tokens";
+import { Fastify, BootstrapConfig } from "./tokens";
 import { FastifyInstance } from "fastify";
 import { processController } from "./controllers";
 
@@ -21,6 +21,7 @@ export const processBootstrap = async (
   // create a new container
   const container = await createContainer([
     { token: Fastify, useValue: inst },
+    { token: BootstrapConfig, useValue: opts },
     ...(opts.providers || []),
   ]);
 

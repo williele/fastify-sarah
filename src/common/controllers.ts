@@ -7,8 +7,8 @@ import {
 import { ServerResponse } from "http";
 import { makeControllerDecorator, mergeControllerData } from "../controllers";
 import { RootInstance, SubData, PreviousData, ParentContainer } from "dormice";
-import { Fastify } from "../tokens";
-import { ControllerConfig, TypeAll } from "../types";
+import { Fastify, BootstrapConfig } from "../tokens";
+import { ControllerConfig, TypeAll, BootstrapOptions } from "../types";
 import { parseSchema } from "../schemas";
 import { CONTROLLER_PARAM } from "../metadatakeys";
 
@@ -20,13 +20,17 @@ export function Controller(url: string = "") {
   return makeControllerDecorator({
     on: "class",
     callback: () => ({
-      deps: () => [Fastify, SubData, PreviousData],
+      deps: () => [Fastify, SubData, PreviousData, BootstrapConfig],
       factory: (
         fastify: FastifyInstance,
         sub: { [key: string]: ControllerConfig[] },
-        root: ControllerConfig[]
+        root: ControllerConfig[],
+        bootOpts: BootstrapOptions
       ) => {
-        const routes = mergeControllerData(sub, [{ url }, ...root]);
+        const bootConfig: ControllerConfig = {};
+        if (bootOpts.prefix !== undefined) bootConfig.url = bootOpts.prefix;
+
+        const routes = mergeControllerData(sub, [bootConfig, { url }, ...root]);
         routes.forEach((route) => {
           // apply route
           fastify.route(route);
