@@ -22,6 +22,16 @@ describe("schemas", () => {
     @BoolProp() completed: boolean;
   }
 
+  it("should make schema with $id", async () => {
+    @ObjectType()
+    class Foo {
+      @StringProp() id: string;
+    }
+
+    let result = await processSchema(Foo);
+    expect(result.result).toHaveProperty("$id", "Foo");
+  });
+
   it("should process schema correctly", async () => {
     @ObjectType()
     class Todo {
@@ -36,6 +46,7 @@ describe("schemas", () => {
 
     let result = await processSchema(Todo);
     expect(result.result).toEqual({
+      $id: "Todo",
       type: "object",
       properties: {
         id: { type: "string" },
@@ -57,6 +68,7 @@ describe("schemas", () => {
 
     result = await parseSchema(Todo, Todo);
     expect(result).toEqual({
+      $id: "Todo",
       type: "object",
       properties: {
         id: { type: "string" },
@@ -69,6 +81,7 @@ describe("schemas", () => {
     expect(result).toEqual({
       type: "array",
       items: {
+        $id: "Todo",
         type: "object",
         properties: {
           id: { type: "string" },
@@ -108,6 +121,7 @@ describe("schemas", () => {
 
     let result = await processSchema(Foo);
     expect(result.result).toEqual({
+      $id: "Foo",
       type: "object",
       properties: {
         text: { type: "string" },
@@ -124,6 +138,7 @@ describe("schemas", () => {
 
     result = await processSchema(Bar);
     expect(result.result).toEqual({
+      $id: "Bar",
       type: "object",
       properties: {
         id: { type: "string" },
@@ -144,6 +159,7 @@ describe("schemas", () => {
     }
     let result = await processSchema(Foo);
     expect(result.result).toEqual({
+      $id: "Foo",
       type: "object",
       properties: {
         id: { type: "string" },
@@ -157,6 +173,7 @@ describe("schemas", () => {
     class Bar extends Foo {}
     result = await processSchema(Bar);
     expect(result.result).toEqual({
+      $id: "Bar",
       type: "object",
       properties: {
         id: { type: "string" },
@@ -173,6 +190,7 @@ describe("schemas", () => {
     }
     result = await processSchema(Baz);
     expect(result.result).toEqual({
+      $id: "Baz",
       type: "object",
       properties: {
         id: { type: "string" },
@@ -189,6 +207,7 @@ describe("schemas", () => {
 
     let configs = await processSchema(CreateTodoDto);
     expect(configs.result).toEqual({
+      $id: "CreateTodoDto",
       type: "object",
       properties: {
         title: { type: "string" },
@@ -197,6 +216,7 @@ describe("schemas", () => {
 
     configs = await processSchema(UpdateTodoDto);
     expect(configs.result).toEqual({
+      $id: "UpdateTodoDto",
       type: "object",
       properties: {
         completed: { type: "boolean" },
@@ -209,6 +229,7 @@ describe("schemas", () => {
 
     configs = await processSchema(Empty);
     expect(configs.result).toEqual({
+      $id: "Empty",
       type: "object",
       properties: {},
     });
@@ -251,6 +272,7 @@ describe("schemas", () => {
     // Category
     let configs = await processSchema(Category);
     expect(configs.result).toEqual({
+      $id: "Category",
       type: "object",
       properties: {
         id: { type: "string" },
@@ -262,6 +284,7 @@ describe("schemas", () => {
     // Product
     configs = await processSchema(Product);
     expect(configs.result).toEqual({
+      $id: "Product",
       type: "object",
       properties: {
         id: { type: "string" },
@@ -270,6 +293,7 @@ describe("schemas", () => {
           type: "array",
           minItems: 1,
           items: {
+            $id: "Category",
             type: "object",
             properties: {
               id: { type: "string" },
@@ -285,6 +309,7 @@ describe("schemas", () => {
     // CreateProductDto
     configs = await processSchema(CreateProductDto);
     expect(configs.result).toEqual({
+      $id: "CreateProductDto",
       type: "object",
       properties: {
         title: { type: "string", minLength: 4 },
@@ -296,6 +321,7 @@ describe("schemas", () => {
     // UpdateProductDto
     configs = await processSchema(UpdateTodoDto);
     expect(configs.result).toEqual({
+      $id: "UpdateTodoDto",
       type: "object",
       properties: {
         title: { type: "string", minLength: 4 },
@@ -335,6 +361,7 @@ describe("schemas", () => {
 
     let configs = await processSchema(Foo);
     expect(configs.result).toEqual({
+      $id: "Foo",
       type: "object",
       properties: {
         id: { type: "string" },

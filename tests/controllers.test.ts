@@ -48,7 +48,11 @@ describe("controllers", () => {
         response: {
           200: {
             type: "array",
-            items: { type: "object", properties: { text: { type: "string" } } },
+            items: {
+              $id: "Message",
+              type: "object",
+              properties: { text: { type: "string" } },
+            },
           },
         },
       },
@@ -82,6 +86,7 @@ describe("controllers", () => {
     expect(result.data.sub.all[0]).toEqual({
       schema: {
         querystring: {
+          $id: "SearchQuery",
           type: "object",
           properties: {
             search: { type: "string" },

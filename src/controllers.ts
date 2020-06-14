@@ -33,7 +33,7 @@ export function makeControllerParamDecorator(
 ) {
   return makeDecorator(
     {
-      on: ["parameter"],
+      on: "parameter",
       callback: (info) => {
         const { target, key, index } = info;
         const params =

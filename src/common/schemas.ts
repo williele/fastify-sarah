@@ -1,5 +1,5 @@
 import { makeSchemaDecorator, mergeSchemaData, parseSchema } from "../schemas";
-import { PreviousData, Result, SubResult } from "dormice";
+import { PreviousData, Result, SubResult, Root, Constructable } from "dormice";
 import { JSONSchema } from "fastify";
 import {
   StringTypeOptions,
@@ -18,12 +18,16 @@ export function ObjectType(opts: ObjectTypeOptions = {}) {
   return makeSchemaDecorator({
     on: ["class"],
     callback: () => ({
-      deps: () => [SubResult, PreviousData],
+      deps: () => [SubResult, PreviousData, Root],
       factory: (
         properties: { [key: string]: JSONSchema },
-        root: JSONSchema[]
+        root: JSONSchema[],
+        target: Constructable
       ) => {
-        const obj: any = mergeSchemaData({}, [{ type: "object" }, ...root]);
+        const obj: any = mergeSchemaData({}, [
+          { $id: target.name, type: "object" },
+          ...root,
+        ]);
         obj.properties = properties;
         return { ...obj, ...opts };
       },

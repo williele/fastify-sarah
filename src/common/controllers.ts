@@ -18,7 +18,7 @@ import { CONTROLLER_PARAM } from "../metadatakeys";
  */
 export function Controller(url: string = "") {
   return makeControllerDecorator({
-    on: ["class"],
+    on: "class",
     callback: () => ({
       deps: () => [Fastify, SubData, PreviousData],
       factory: (
@@ -40,7 +40,7 @@ export function Controller(url: string = "") {
 
 export function Route(method: HTTPMethod, url: string = "") {
   return makeControllerDecorator({
-    on: ["method"],
+    on: "method",
     callback: ({ target, key, descriptor }) => ({
       deps: () => [RootInstance],
       factory: (inst) => {
@@ -92,7 +92,7 @@ export function Res(
   schema?: TypeAll
 ) {
   return makeControllerDecorator({
-    on: ["method"],
+    on: "method",
     callback: ({ returnType }) => ({
       deps: () => [ParentContainer],
       factory: async (container) => {
