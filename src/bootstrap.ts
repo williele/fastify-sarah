@@ -34,7 +34,7 @@ export const processBootstrap = async (
   const schemas = opts.schemas || [];
   schemas.forEach(async (schema) => {
     const { result } = await processSchema(schema, container);
-    addSchema(inst, result, opts);
+    addSchema(inst, result);
   });
 
   // processing controllers
