@@ -1,30 +1,30 @@
 /// merging fastify configuration
-import { RouteOptions } from 'fastify';
-import { join } from 'path';
-import { ControllerConfig } from '../types';
-import { DecoratorData } from 'dormice';
+import { RouteOptions } from "fastify";
+import { join } from "path";
+import { ControllerConfig } from "../types";
+import { DecoratorData } from "dormice";
 
 const DEFAULT_CONFIG: Partial<RouteOptions> = {
-  url: '/',
+  url: "/",
 };
 
 /**
  * merge configures
  */
 export function mergeConfigs(configs: ControllerConfig[]) {
-  return configs.reduce((a, b) => combineConfigs({ ...a }, { ...b }), {
+  return configs.reduce((a, b) => combineConfigs({ ...a }, b ? { ...b } : {}), {
     ...DEFAULT_CONFIG,
   });
 }
 
 const STACK_PROPERTIES = [
-  'onRequest',
-  'preParsing',
-  'preValidation',
-  'preHandler',
-  'preSerialization',
-  'onSend',
-  'onResponse',
+  "onRequest",
+  "preParsing",
+  "preValidation",
+  "preHandler",
+  "preSerialization",
+  "onSend",
+  "onResponse",
 ];
 
 // combine two config
@@ -37,9 +37,9 @@ export function combineConfigs(
   Object.entries(b).forEach(([key, val]) => {
     if (!result[key]) return (result[key] = val);
     // join path
-    if (key === 'url') return (result[key] = join(result[key]!, val));
+    if (key === "url") return (result[key] = join(result[key]!, val));
     // merge schema
-    if (key === 'schema')
+    if (key === "schema")
       return (result[key] = combineObjects(result[key]!, val));
     // stack
     if (STACK_PROPERTIES.includes(key)) {
@@ -63,7 +63,7 @@ export function combineObjects(a: object, b: object) {
     if (Array.isArray(result[key]))
       return (result[key] = result[key].concat(val));
     // merge object
-    if (typeof result[key] === 'object' && typeof val === 'object')
+    if (typeof result[key] === "object" && typeof val === "object")
       return (result[key] = combineObjects(result[key], val));
 
     result[key] = val;

@@ -1,6 +1,6 @@
 import { makeDecorator, processDecorators } from "dormice";
-import { DecoratorConfig, Constructable } from "dormice/dist/types";
-import { ControllerConfig } from "./types";
+import { Constructable } from "dormice/dist/types";
+import { ControllerConfig, DecoratorControllerConfig } from "./types";
 import {
   CONTROLLER_SUB,
   CONTROLLER_ROOT,
@@ -13,9 +13,7 @@ import { Container } from "inversify";
 /**
  * make a custom decorator controller
  */
-export function makeControllerDecorator(
-  config: DecoratorConfig<ControllerConfig>
-) {
+export function makeControllerDecorator(config: DecoratorControllerConfig) {
   return makeDecorator(config, {
     rootMetadata: CONTROLLER_ROOT,
     subMetadata: CONTROLLER_SUB,
@@ -29,7 +27,7 @@ export function makeControllerDecorator(
  */
 export function makeControllerParamDecorator(
   resolve: (req: FastifyRequest, rep: FastifyReply<any>) => any,
-  config: DecoratorConfig<ControllerConfig>["callback"] = () => () => ({})
+  config: DecoratorControllerConfig["callback"] = () => () => {}
 ) {
   return makeDecorator(
     {

@@ -3,19 +3,11 @@ export {
   makeControllerDecorator,
   makeControllerParamDecorator,
 } from "./controllers";
-export { makeSchemaDecorator } from "./schemas";
+export { makeSchemaDecorator, parseSchema } from "./schemas";
 export * from "./types";
 export * from "./tokens";
 
 export * from "./common/public-api";
 
-export {
-  Provider,
-  Providers,
-  ProviderFactory,
-  ProviderToken,
-  ProviderValue,
-  FactoryConfig,
-  Factory,
-  Inject,
-} from "dormice";
+// exports very thing in dormice
+export * from "dormice";

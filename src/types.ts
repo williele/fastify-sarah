@@ -1,5 +1,10 @@
 import { RouteOptions, JSONSchema } from "fastify";
-import { Providers, Constructable, ProviderToken } from "dormice";
+import {
+  Providers,
+  Constructable,
+  ProviderToken,
+  DecoratorConfig,
+} from "dormice";
 
 // fastify instance
 declare module "fastify" {
@@ -12,6 +17,7 @@ declare module "fastify" {
 
 // controller
 export type ControllerConfig = Partial<RouteOptions>;
+export type DecoratorControllerConfig = DecoratorConfig<ControllerConfig | void>;
 
 export interface BootstrapOptions {
   controllers?: Constructable[]; // controllers

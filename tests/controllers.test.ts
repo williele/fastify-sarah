@@ -8,7 +8,7 @@ import {
   Query,
   ArrayProp,
 } from "../src/public-api";
-import { processController } from "../src/controllers";
+import { processController, makeControllerDecorator } from "../src/controllers";
 import { Container, createContainer } from "dormice";
 import { Fastify as FastifyInst, BootstrapConfig } from "../src/tokens";
 
@@ -25,8 +25,18 @@ describe("controllers", () => {
     ]);
   });
 
-  it("should make controller decorator correctly", () => {
-    expect(true).toBeTruthy();
+  it("should allow empty config decorator", async () => {
+    const Decocator = makeControllerDecorator({
+      on: "method",
+      callback: () => () => {},
+    });
+
+    @Controller()
+    class DemoController {
+      @Decocator demo() {}
+    }
+
+    await processController(DemoController, container);
   });
 
   it("should make reponse schema correctly", async () => {

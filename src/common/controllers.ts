@@ -38,7 +38,13 @@ export function Controller(url: string = "") {
           }
 
           // apply route
-          fastify.route(route);
+          if (
+            route.method !== undefined &&
+            route.url !== undefined &&
+            route.handler !== undefined
+          ) {
+            fastify.route(route);
+          }
         });
 
         return { url };
