@@ -1211,7 +1211,7 @@ domexception@^2.0.1:
   dependencies:
     webidl-conversions "^5.0.0"
 
-dormice@^0.0.1-alpha.1:
+dormice@^0.0.1-alpha.12:
   version "0.0.1-alpha.12"
   resolved "https://registry.yarnpkg.com/dormice/-/dormice-0.0.1-alpha.12.tgz#da2f63990a38376a513d72e3b64be34ae87f1b8e"
   integrity sha512-XJMgcDmc1qI1rDykJoW3ZbQLdPt/RNpC2YE6Z2Y9uol1py1WRQzOyQe41jJXepfJmk3lEgmJOuPvIbzJKSfZKw==
@@ -2513,9 +2513,9 @@ lodash.sortby@^4.7.0:
   integrity sha1-7dFMgk4sycHgsKG0K7UhBRakJDg=
 
 lodash@^4.17.13, lodash@^4.17.15:
-  version "4.17.15"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
-  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+  version "4.17.19"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
+  integrity sha512-JNvd8XER9GQX0v2qJgsaN/mzFCNA5BRe/j8JN9d+tWyGLSodKQHKFicdwNYzWwI3wjRnaKPsGj1XkBjx/F96DQ==
 
 make-dir@^3.0.0:
   version "3.1.0"
