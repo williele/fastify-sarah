@@ -1211,7 +1211,7 @@ domexception@^2.0.1:
   dependencies:
     webidl-conversions "^5.0.0"
 
-dormice@^0.0.1-alpha.1:
+dormice@^0.0.1-alpha.12:
   version "0.0.1-alpha.12"
   resolved "https://registry.yarnpkg.com/dormice/-/dormice-0.0.1-alpha.12.tgz#da2f63990a38376a513d72e3b64be34ae87f1b8e"
   integrity sha512-XJMgcDmc1qI1rDykJoW3ZbQLdPt/RNpC2YE6Z2Y9uol1py1WRQzOyQe41jJXepfJmk3lEgmJOuPvIbzJKSfZKw==
@@ -3878,9 +3878,9 @@ write-file-atomic@^3.0.0:
     typedarray-to-buffer "^3.1.5"
 
 ws@^7.2.3:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-7.3.0.tgz#4b2f7f219b3d3737bc1a2fbf145d825b94d38ffd"
-  integrity sha512-iFtXzngZVXPGgpTlP1rBqsUK82p9tKqsWRPg5L56egiljujJT3vGAYnHANvFxBieXrTFavhzhxW52jnaWV+w2w==
+  version "7.4.6"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
+  integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
 
 xml-name-validator@^3.0.0:
   version "3.0.0"
